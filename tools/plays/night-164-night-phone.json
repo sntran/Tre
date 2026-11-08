@@ -1,0 +1,72 @@
+{
+ "about": "#164: at night by the river, with persons near: the button is the sleep; on Nghé the button is the sleep too, and a press gets the hero down and sleeps until the dawn.",
+ "start": "?story=raid-river-night",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "document.querySelector('.act-btn')?.dataset.act"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "1-at-night-the-button-is-the-mat"
+  },
+  {
+   "tap": {
+    "thingExpr": "'friend:nghe'"
+   },
+   "after": 0.4
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "String(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.riding)"
+  },
+  {
+   "print": "document.querySelector('.act-btn')?.dataset.act"
+  },
+  {
+   "shot": "2-on-nghe-the-button-is-the-mat"
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "wait": 4
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "3-the-morning"
+  }
+ ]
+}

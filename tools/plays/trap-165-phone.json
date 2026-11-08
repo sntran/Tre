@@ -1,0 +1,81 @@
+{
+ "about": "#165: K, the raid of the soldiers: the lines of the trap come first, with count words; two presses with a trap in the hands move it to post 2, and the line says that it is right.",
+ "start": "?story=traps-k",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer, .say-layer'))",
+   "timeout": 30
+  },
+  {
+   "read": 12
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-5).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "1-the-lines-of-the-trap-first"
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.item?.kind === 'trap' && !e.item.held && e.item.zone !== 'raid-road')?.id ?? null"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 0.6
+  },
+  {
+   "press": true,
+   "after": 0.3
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "2-two-presses-the-ghost-at-post-two"
+  },
+  {
+   "wait": 8
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-4).map((x) => [x.key, x.text]))"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.filter((e) => e.item?.kind === 'trap' && e.item.zone === 'raid-road').map((e) => e.item.slot))"
+  },
+  {
+   "shot": "3-the-trap-lies-at-post-two"
+  }
+ ]
+}

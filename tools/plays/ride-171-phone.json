@@ -1,0 +1,53 @@
+{
+ "about": "#171: grade 1 in the village: the picture of the ride is a buffalo calf; a press, and the hero jumps up and sits on the back of Nghé.",
+ "start": "?story=forge-horse",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "thingExpr": "'friend:nghe'"
+   },
+   "after": 0.4
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "document.querySelector('.act-btn img')?.getAttribute('src')"
+  },
+  {
+   "shot": "1-the-picture-of-the-ride"
+  },
+  {
+   "press": true,
+   "after": 0.25
+  },
+  {
+   "shot": "2-the-jump-up"
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "shot": "3-on-the-back-of-nghe"
+  }
+ ]
+}

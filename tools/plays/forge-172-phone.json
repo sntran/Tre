@@ -1,0 +1,140 @@
+{
+ "about": "#170, #172: grade 5, the iron horse: steam rises at \"Xèo!\", and after one lump in the hearth the button is the next lump, not the bellows.",
+ "start": "?story=forge-horse",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "5",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "smith"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "wait": 2
+  },
+  {
+   "read": 1,
+   "if": "!document.querySelector('.dialogue-layer')?.textContent.includes('Xèo')",
+   "after": 1
+  },
+  {
+   "read": 1,
+   "if": "!document.querySelector('.dialogue-layer')?.textContent.includes('Xèo')",
+   "after": 1
+  },
+  {
+   "read": 1,
+   "if": "!document.querySelector('.dialogue-layer')?.textContent.includes('Xèo')",
+   "after": 1
+  },
+  {
+   "read": 1,
+   "if": "!document.querySelector('.dialogue-layer')?.textContent.includes('Xèo')",
+   "after": 1
+  },
+  {
+   "read": 1,
+   "if": "!document.querySelector('.dialogue-layer')?.textContent.includes('Xèo')",
+   "after": 1
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "String(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'steam:talk')))"
+  },
+  {
+   "shot": "1-steam-at-xeo"
+  },
+  {
+   "read": 10
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.item?.kind === 'ore' && e.item.zone === 'horse-ore')?.id ?? null"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "press": true,
+   "after": 2.5
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "document.querySelector('.act-btn')?.dataset.act"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "2-after-one-lump-the-button-is-the-next-lump"
+  }
+ ]
+}

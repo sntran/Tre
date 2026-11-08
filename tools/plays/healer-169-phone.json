@@ -1,0 +1,119 @@
+{
+ "about": "#169: grade 1, the basket of bà lang: with no tap, each press stays the work (a pick, a put); after a tap on her, the button is the give.",
+ "start": "?story=trial-healer",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 90
+  },
+  {
+   "read": 14
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => /first\\.you$/.test(x.key ?? ''))",
+   "timeout": 120
+  },
+  {
+   "wait": 3
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.item?.zone === 'bed-ngai' && !e.item.held)?.id ?? null"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 1.6
+  },
+  {
+   "press": true,
+   "after": 1.6
+  },
+  {
+   "press": true,
+   "after": 1.6
+  },
+  {
+   "press": true,
+   "after": 1.6
+  },
+  {
+   "press": true,
+   "after": 1.6
+  },
+  {
+   "press": true,
+   "after": 1.6
+  },
+  {
+   "print": "document.querySelector('.act-btn')?.dataset.act"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "1-presses-stay-the-work"
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "document.querySelector('.act-btn')?.dataset.act"
+  },
+  {
+   "shot": "2-a-tap-on-her-and-the-button-is-the-give"
+  }
+ ]
+}

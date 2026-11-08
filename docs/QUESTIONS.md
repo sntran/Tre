@@ -293,3 +293,10 @@ These questions need a person who knows Vietnamese history and geography. Until 
 ## The map script and the map of Phù Đổng (#130)
 
 `tools/maps/era1.py` and `data/maps/phu-dong.json` did not agree in five places: the river trigger (the texts after and before the bridge), the "-early" ore triggers (the flag that hides them), and the places of the smith and the healer in the plan of the day. I brought the script up to the map in these places. One place is left: two rows of the stamp of the river bank (stamp 2, rows 22 and 23, the last two cells), where the script writes packed earth (`yy`) and the map has grass (`..`). Which one is right? I did not change the map there.
+
+## Questions after the play test of #164–#173
+
+119. **The stones beside the hole (#172).** A boy of K put five stones beside the hole of the cart. In my plays of the cart at K, each press with a stone in the hands put it in the hole, and each press with empty hands took the next stone. The stones lie in a row beside the hole on purpose (#147), so that a child counts them. Did the boy see the stones in the row and think that they were not in the hole? Then the row must lie in the hole, or a line must say "Ba hòn đá trong hố rồi."
+120. **The line of a pile at the clump (#168).** A boy of K heard "Lấy một cái ở đống kia, rồi đặt vào đây nhé." at the bamboo clump. This is the line of a help of a task with no line of its own. In my plays at the clump, every help was a line of the staffs. Which task was near the clump in that play (a small event of the day, a puzzle)?
+121. **A press that gives only a step at bà lang (#169).** A boy of grade 4 stood beside the sign post with a bunch in the hands, and each press gave one step. I did not see this in my plays. Was the hero stuck on the sign post? A walk that stops on a thing must go around it.
+122. **The seat on Nghé (#171).** The rider now sits 0.75 world units over the ground, on the back of Nghé, and jumps up at the start of the ride. Does a child see the hero as "on" Nghé from every side of the view, and is the jump long enough to see on a slow phone?

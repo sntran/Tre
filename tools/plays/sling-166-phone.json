@@ -1,0 +1,61 @@
+{
+ "about": "#166: grade 1, the first scouts: the post of the scout glows, one press says its count, and the short stone says the count and the post where it fell.",
+ "start": "?story=raid-first-sling",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer, .say-layer'))",
+   "timeout": 30
+  },
+  {
+   "read": 12
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() >= 10",
+   "timeout": 120
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "shot": "1-the-post-of-the-scout-glows"
+  },
+  {
+   "press": true,
+   "after": 0.3
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-2).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "2-one-press-says-mot"
+  },
+  {
+   "wait": 4
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "3-the-miss-says-the-count-and-the-post"
+  }
+ ]
+}

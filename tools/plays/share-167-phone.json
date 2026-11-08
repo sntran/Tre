@@ -1,0 +1,301 @@
+{
+ "about": "#167: grade 2, the share after the first soldiers at Trâu Sơn: the mats lie on open ground with the face of each owner, the first line says that the extra sack stays on the pile, and after a sack too many the line says to take it back to the pile.",
+ "start": "?story=raid-soldiers",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer, .say-layer'))",
+   "timeout": 30
+  },
+  {
+   "read": 12
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid)",
+   "timeout": 30
+  },
+  {
+   "print": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return 'none'; for (const ph of r.phases ?? []) for (const w of ph.waves ?? []) w.in = true; r.phase = Math.max(0, (r.phases ?? []).length - 1); for (const e of r.enemies) e.state = 'gone'; r.hold = null; return 'won'; })()"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result)",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "read": 10
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:share-hero'))",
+   "timeout": 60
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-4).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "1-each-mat-shows-its-owner"
+  },
+  {
+   "read": 6
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.item?.kind === 'sack' && e.item.zone === 'loot')?.id ?? null"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 20
+  },
+  {
+   "tap": {
+    "thing": "mat:share-hero"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.item?.kind === 'sack' && e.item.zone === 'loot')?.id ?? null"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 20
+  },
+  {
+   "tap": {
+    "thing": "mat:share-nghe"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.item?.kind === 'sack' && e.item.zone === 'loot')?.id ?? null"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 20
+  },
+  {
+   "tap": {
+    "thing": "mat:share-giong"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.item?.kind === 'sack' && e.item.zone === 'loot')?.id ?? null"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 20
+  },
+  {
+   "tap": {
+    "thing": "mat:share-hero"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.item?.kind === 'sack' && e.item.zone === 'loot')?.id ?? null"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 20
+  },
+  {
+   "tap": {
+    "thing": "mat:share-nghe"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.item?.kind === 'sack' && e.item.zone === 'loot')?.id ?? null"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 20
+  },
+  {
+   "tap": {
+    "thing": "mat:share-giong"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.item?.kind === 'sack' && e.item.zone === 'loot')?.id ?? null"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 20
+  },
+  {
+   "tap": {
+    "thing": "mat:share-nghe"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-4).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "2-the-line-says-back-to-the-pile"
+  }
+ ]
+}

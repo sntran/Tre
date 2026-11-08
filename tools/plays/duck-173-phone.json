@@ -1,0 +1,235 @@
+{
+ "about": "#173: grade 1, the ducks of the farmer: with all the ducks in the pen, a wave gets \"Đủ bốn con rồi. Cháu gọi cô đếm nhé.\", never \"Tìm một con vịt…\".",
+ "start": "?story=event-duck",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "String(tre.activeVillage.session.command({ type: 'event', id: 'duck' }))"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "thingExpr": "'event:duck'"
+   },
+   "after": 0.4
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) || tre.activeVillage.heard().some((x) => x.key === 'event.duck.start')",
+   "timeout": 60
+  },
+  {
+   "read": 8
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.item?.kind === 'duck' && !e.item.stray && !e.item.held && !/place/.test(e.item.zone ?? ''))?.id ?? null"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'event.duck.all')"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'event.duck.all')"
+  },
+  {
+   "press": true,
+   "after": 1.2,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'event.duck.all')"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 30,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'event.duck.all')"
+  },
+  {
+   "tap": {
+    "place": "event-duck-place"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'event.duck.all')"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'event.duck.all')"
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'event.duck.all')"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.item?.kind === 'duck' && !e.item.stray && !e.item.held && !/place/.test(e.item.zone ?? ''))?.id ?? null"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'event.duck.all')"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'event.duck.all')"
+  },
+  {
+   "press": true,
+   "after": 1.2,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'event.duck.all')"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 30,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'event.duck.all')"
+  },
+  {
+   "tap": {
+    "place": "event-duck-place"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'event.duck.all')"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'event.duck.all')"
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'event.duck.all')"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.item?.kind === 'duck' && !e.item.stray && !e.item.held && !/place/.test(e.item.zone ?? ''))?.id ?? null"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'event.duck.all')"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'event.duck.all')"
+  },
+  {
+   "press": true,
+   "after": 1.2,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'event.duck.all')"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 30,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'event.duck.all')"
+  },
+  {
+   "tap": {
+    "place": "event-duck-place"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'event.duck.all')"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'event.duck.all')"
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'event.duck.all')"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.item?.kind === 'duck' && !e.item.stray && !e.item.held && !/place/.test(e.item.zone ?? ''))?.id ?? null"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'event.duck.all')"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'event.duck.all')"
+  },
+  {
+   "press": true,
+   "after": 1.2,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'event.duck.all')"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 30,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'event.duck.all')"
+  },
+  {
+   "tap": {
+    "place": "event-duck-place"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'event.duck.all')"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'event.duck.all')"
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'event.duck.all')"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "1-all-the-ducks-in-the-pen"
+  },
+  {
+   "button": ".wave-btn",
+   "after": 3
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "2-the-wave-gets-the-call-of-the-farmer"
+  }
+ ]
+}
