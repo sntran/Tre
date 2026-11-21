@@ -33,6 +33,7 @@
 // raid starts or its things went away), and lose { to, take } (the goods that an enemy took fly
 // from the counter to it).
 import { ROW_SIDE, ROW_STEP } from './world/systems/place.js';
+import { fracWord } from './fracword.js';
 import { findPath, pathNextTo, createPlaneTileMap, footprint } from './tilemap.js';
 import { check } from './conditions.js';
 import { createTriggers } from './triggers.js';
@@ -1816,7 +1817,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         out.parts = num(t.parts);
         // The part of the stem of the level (#102).
         const plan = def.npc === speaker ? trialZone(def.id)?.zone.plan : null;
-        if (plan?.b) out.part = { key: `frac.${plan.a}.${plan.b}` };
+        if (plan?.b) out.part = fracWord(plan.a, plan.b);
       }
       if (def.task === 'slash') out.staffs = num(t.parts);
       if (def.task === 'horse') out.lumps = num(t.ore);

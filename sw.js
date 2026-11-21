@@ -173,6 +173,7 @@ const FILES = [
   'src/core/experiments.js',
   'src/core/folk-session.js',
   'src/core/folkgames.js',
+  'src/core/fracword.js',
   'src/core/clues.js',
   'src/core/weekly.js',
   'src/core/taps.js',

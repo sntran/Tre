@@ -4,6 +4,7 @@
 // logs each move with its outcome, and turns each move into a script that the mentor system of the
 // world plays (src/core/world/systems/mentor.js). No DOM.
 import { newMentor, newMemory, onCommit, onIdle, onWave, onCheck, onChange, demoTarget, demoParts, shareParts } from './mentor.js';
+import { fracWord } from './fracword.js';
 import { getEntity, query, addEntity } from './world/state.js';
 import { endScript } from './world/systems/mentor.js';
 import { basketRowAt, matSlot, spareStake, inHands, DESK_COLORS, AIM_RISE } from './world/systems/work.js';
@@ -1195,8 +1196,8 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       if (op.part) {
         // Along the whole stem, the line says what was counted (#138: "Isn't 3 sections 1/4?"): the
         // lays of the piece, and the part of the stem that each piece is.
-        if (op.onto === 'stem') s.say(at, 'woodcutter.part.lays', { n: { key: `num.${op.n}` }, part: { key: `frac.${op.part.a}.${op.part.b}` } });
-        else s.say(at, 'woodcutter.part', { part: { key: `frac.${op.part.a}.${op.part.b}` } });
+        if (op.onto === 'stem') s.say(at, 'woodcutter.part.lays', { n: { key: `num.${op.n}` }, part: fracWord(op.part.a, op.part.b) });
+        else s.say(at, 'woodcutter.part', { part: fracWord(op.part.a, op.part.b) });
         at += op.onto === 'stem' ? LAY_LINE + 1.4 : LAY_LINE;
       }
     }
@@ -1209,7 +1210,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       // the parts add to the whole.").
       const rest = plan.want[2];
       const g = gcd(rest, plan.length);
-      s.say(at, 'woodcutter.rest', { n: { key: `num.${Math.min(30, rest)}` }, part: { key: `frac.${rest / g}.${plan.length / g}` } });
+      s.say(at, 'woodcutter.rest', { n: { key: `num.${Math.min(30, rest)}` }, part: fracWord(rest / g, plan.length / g) });
       at += REST_LINE;
     }
     const e = bad ? pieceAt(bad.i) : null;
