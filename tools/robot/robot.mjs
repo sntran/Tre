@@ -347,7 +347,7 @@ export async function playScene(story, { kind = 'star', night = false, commands 
       }
     }
   }
-  return { findings, stats: { commands, lines: lines.length, tick: st().tick }, start, end: where(), heard: lines.map((l) => l.text) };
+  return { findings, stats: { commands, lines: lines.length, tick: st().tick }, start, end: where(), heard: lines.map((l) => l.text), lines: lines.map((l) => ({ key: l.key, text: l.text, tick: l.tick, command: l.command })) };
 }
 
 // The scenes of tests/stories/: [{ name, story }].
