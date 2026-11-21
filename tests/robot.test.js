@@ -16,18 +16,20 @@ const all = new Map(scenes().map((s) => [s.name, s.story]));
 //   commands, todo }
 const CASES = [];
 for (const name of ['staffs-grade1', 'forge-horse', 'trial-healer', 'raid-river-night', 'event-duck', 'ferry']) {
-  for (const night of [false, true]) CASES.push({ name, kind: 'star', night, todo: '#184: lost presses' });
+  for (const night of [false, true]) CASES.push({ name, kind: 'star', night });
 }
+// The first line of the ferry says to press the boat before the boat is on the button (#190).
+CASES.find((c) => c.name === 'ferry' && !c.night).todo = '#190: the first line of the ferry';
 for (const night of [false, true]) {
   // The share after the raid of the soldiers: the raid stays off the button (#185).
-  CASES.push({ name: 'raid-soldiers', kind: 'dealer', night, steps: 26, commands: 80, todo: '#184, #185: lost presses, the raid on the button at the share' });
+  CASES.push({ name: 'raid-soldiers', kind: 'dealer', night, steps: 26, commands: 80, todo: '#185: the raid on the button at the share' });
   // A child who counts slowly: the count still adds up (#186).
-  CASES.push({ name: 'raid-soldiers', kind: 'slow', night, todo: '#184, #186: lost presses, the slow count' });
-  CASES.push({ name: 'bridge-mashing', kind: 'presser', night, todo: '#184, #191: lost presses, the loop of the plank' });
-  CASES.push({ name: 'forge-horse', kind: 'presser', night, grade: 3, todo: '#184, #188: lost presses, the loop of bends' });
-  CASES.push({ name: 'puzzle-ferry', kind: 'star', night, todo: '#184, #190: lost presses, the things of the banks' });
-  CASES.push({ name: 'healer-grade4', kind: 'walker', night, todo: '#184: presses during a walk' });
-  CASES.push({ name: 'staffs-grade1', kind: 'walker', night, todo: '#184, #187: presses during a walk, the line of the hold' });
+  CASES.push({ name: 'raid-soldiers', kind: 'slow', night, todo: night ? '#186: the slow count' : null });
+  CASES.push({ name: 'bridge-mashing', kind: 'presser', night, todo: night ? null : '#191: the loop of the plank' });
+  CASES.push({ name: 'forge-horse', kind: 'presser', night, grade: 3 });
+  CASES.push({ name: 'puzzle-ferry', kind: 'star', night, todo: '#190: the loop of the riddle, the fisher at night' });
+  CASES.push({ name: 'healer-grade4', kind: 'walker', night });
+  CASES.push({ name: 'staffs-grade1', kind: 'walker', night, todo: night ? null : '#185, #187: a thing of bà lang at the staffs, the line of the hold' });
 }
 
 for (const c of CASES) {
@@ -42,7 +44,7 @@ for (const c of CASES) {
 }
 
 // The laws of #183, each on its own.
-test('lostPress: a press with no act, no wait for a walk, and no "not now" is lost; a press of another child is not checked', () => {
+test('lostPress: a press with no act, no wait for a walk, no "not now", and no stop at a commit is lost; a press of another child is not checked', () => {
   const mine = new Map([[1, 'put'], [2, 'pick'], [3, 'slash'], [4, 'cross']]);
   const answers = [
     { id: 1, act: null, done: false, why: 'settle' },
@@ -50,6 +52,7 @@ test('lostPress: a press with no act, no wait for a walk, and no "not now" is lo
     { id: 3, act: null, done: false, wait: true },
     { id: 3, act: null, done: false, why: 'walk' },
     { id: 4, act: null, done: false, nope: true },
+    { id: 4, act: null, done: false, arrive: 'cross' },
     { id: 9, act: null, done: false },
   ];
   assert.deepEqual(lostPresses(answers, mine), ['put: settle', 'slash: walk']);

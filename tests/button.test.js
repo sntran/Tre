@@ -127,7 +127,7 @@ test('during the walk to a tapped thing the button shows the act at the end of t
   assert.equal(mat.items.length, rods + 1, 'one more rod on the mat');
 });
 
-test('a press of a picture whose act is gone does nothing: no other act, and the button pulses (#68)', async () => {
+test('a press of a picture whose act is gone does nothing: no other act, and the button says "not now" (#68, #184)', async () => {
   const session = await afterTalk('trial-scholar');
   const hero = getEntity(session.state, 'hero');
   const heap = getEntity(session.state, 'zone:rods');
@@ -142,13 +142,13 @@ test('a press of a picture whose act is gone does nothing: no other act, and the
   run(session, 2.5);
   const rods = mat.items.length;
   const evs = [];
-  session.listen((e) => { if (['press', 'pulse', 'pick', 'put', 'ride'].includes(e.type)) evs.push(e); });
+  session.listen((e) => { if (['press', 'nope', 'pick', 'put', 'ride'].includes(e.type)) evs.push(e); });
   session.command({ type: 'hands', id: a.id });
   session.events();
   run(session, 2);
   assert.ok(!evs.some((e) => e.type === 'press' && e.done), `no act: ${evs.map((e) => `${e.type}:${e.act ?? ''}`).join(' ')}`);
   assert.ok(!evs.some((e) => ['pick', 'put', 'ride'].includes(e.type)), 'nothing moves');
-  assert.ok(evs.some((e) => e.type === 'pulse'), 'the button pulses');
+  assert.ok(evs.some((e) => e.type === 'nope'), 'the button says "not now"');
   assert.equal(mat.items.length, rods);
   assert.equal(session.carried(), null);
 });

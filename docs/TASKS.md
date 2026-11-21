@@ -773,3 +773,14 @@ Two new kinds of child: the `walker` presses one to three times during each walk
 The short sweep plays the share after the raid of the soldiers (the dealer), the bridge (the presser), the forge at grade 3 (the presser), the full ferry riddle at grade 2, bà lang and the staffs with the walker, and the raid of the soldiers with the slow child. A case that breaks a law before its fix is a `todo` with the number of its issue (#184 to #191), and that issue turns the case on.
 
 `node tools/robot/scene.mjs <save>` also prints the goal of the quest strip and the work on the button at the start.
+
+## A press is never lost (#184)
+
+In the short plays after #182, presses were lost in four places, with no sound and no line. Now:
+
+- **A press during a walk does its act at the end of the walk,** one act for each press. When the act of the picture is not there at the end of the walk, the press does the act of the button when it is a work of the same task.
+- **"Not now".** A press that cannot do its act gives a short sound and a small shake of the button (the event `nope`), never silence. While the person of the work shows the first step, the person also says to watch first ("Chờ anh chặt xong nhé.", `mentor.wait.show`).
+- **A commit is never the end of a walk from away.** A press with no tap walks to the place of a dip, a give, or a crossing (`COMMITS` in `src/core/session.js`) and stops there; the next press does the act. A tap on the thing first (a tap on bà lang) is the choice of the child, and the press after it does the act at the end of the walk.
+- **The button does not change under the finger.** For 0.6 s after a change that the child did not make, a press does the act that the button showed before the change, while it is in reach.
+- The fisher says "Đi tới vòng tròn này, rồi cắm nhé." at most one time in 4 s; a press between gets "not now", the glow of the ring, and his point.
+- **Tests:** `tests/press184.test.js`; the robot child has no lost press in the short sweep.

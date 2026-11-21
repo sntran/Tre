@@ -78,6 +78,8 @@ const PENTA = [523.25, 587.33, 659.25, 783.99, 880.0, 1046.5];
 
 const SOUNDS = {
   tap: (t) => tone(880, t, 0.05, { volume: 0.08 }),
+  // "Not now" (#184): two soft low notes, a press that cannot do its act yet.
+  nope: (t) => { tone(330, t, 0.07, { type: 'triangle', volume: 0.1 }); tone(262, t + 0.09, 0.09, { type: 'triangle', volume: 0.1 }); },
   correct: (t) => { tone(PENTA[0], t, 0.12); tone(PENTA[3], t + 0.1, 0.25); },
   wrong: (t) => tone(220, t, 0.3, { type: 'triangle', volume: 0.2, glide: 170 }),
   hit: (t) => { noise(t, 0.12, { volume: 0.4, filter: 900 }); tone(120, t, 0.18, { volume: 0.4, glide: 60 }); },

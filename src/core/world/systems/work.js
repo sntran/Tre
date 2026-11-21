@@ -2503,6 +2503,7 @@ function noRoomLine(world, tz, line, held) {
 // The refused press that shows the ring: the first one (#130: "chật quá" twice before the ring felt
 // like a "wrong" before the child knew there was a choice).
 export const TIGHT_RING = 1;
+const RING_AGAIN = 4; // seconds: the line of the ring of the fisher again only after this
 function tightHint(world, tz, line) {
   const row = query(world, 'item').filter((s) => s.item.zone === line.id && s.item.slot != null && !s.item.held);
   const last = row.reduce((a, s) => (!a || s.item.slot > a.item.slot ? s : a), null);
@@ -2529,10 +2530,18 @@ function tightHint(world, tz, line) {
     tz.zone.tights = Math.max(tz.zone.tights ?? 0, TIGHT_RING);
   }
   if (ring) {
+    // The line of the ring at most one time in RING_AGAIN seconds (#184: presses that did nothing
+    // before now do their act, and a child who only pressed heard the line of the ring again and
+    // again). A press between gets "not now", the glow of the ring, and the point of the fisher.
+    const again = (world.tick - (tz.zone.ringSaid ?? -Infinity)) * STEP < RING_AGAIN;
     if (fisher) {
-      say(world, 'call', fisher.id, { key: 'fisher.tight.ring', params: {}, happened: true });
+      if (!again) {
+        say(world, 'call', fisher.id, { key: 'fisher.tight.ring', params: {}, happened: true });
+        tz.zone.ringSaid = world.tick;
+      }
       fisher.gesture = { act: 'point', x: ring.position.x, z: ring.position.z, t: 2.5 };
     }
+    if (again) world.events.push({ type: 'nope' });
     world.events.push({ type: 'glowThings', ids: [ring.id] });
     return;
   }
@@ -2544,6 +2553,7 @@ function tightHint(world, tz, line) {
     const slot = free.includes(next) ? next : free.reduce((a, k) => (Math.abs(k - near) < Math.abs(a - near) ? k : a));
     addEntity(world, { id: 'why:fisher:next', keep: true, position: { x: line.x + slot, y: line.y + WATER_UP, z: line.z, facing: 0 }, look: 'pull-ring' });
     tz.zone.tightRing = true;
+    tz.zone.ringSaid = world.tick;
     if (fisher) {
       say(world, 'call', fisher.id, { key: 'fisher.tight.ring', params: {}, happened: true });
       fisher.gesture = { act: 'point', x: line.x + slot, z: line.z, t: 2.5 };

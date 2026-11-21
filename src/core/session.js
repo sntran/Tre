@@ -2243,6 +2243,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return;
     }
     const a = pressed(id);
+    // A hold while the person shows the first step: the person says to watch first (#184).
+    if (!busy && !a?.hold && waitShow(id ?? btn?.id ?? null)) return;
     // A hold at the staffs is for the knife (#176: a hold walked to another person, "Chào Na!"):
     // with no culm in reach, the hold walks to the nearest culm of the clump, never to a person.
     const staffs = trialZone('staffs');
@@ -2261,8 +2263,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return;
     }
     if (!a?.hold || busy) {
-      // A hold with no act of a hold (for the robot child, #183).
-      emit({ type: 'press', id: id ?? btn?.id ?? null, act: null, done: false, hold: true, why: busy ? 'busy' : a ? 'nohold' : 'gone' });
+      // A hold with no act of a hold: never silent (#184). While the person shows the first step,
+      // the person says to watch first; else "not now" (why: for the robot child, #183).
+      const hid = id ?? btn?.id ?? null;
+      if (!busy && waitShow(hid)) return;
+      if (!busy && (a || button().a)) nope(hid, a ? 'nohold' : 'gone', { hold: true });
+      else emit({ type: 'press', id: hid, act: null, done: false, hold: true, why: busy ? 'busy' : 'none' });
       return;
     }
     holdAct = a;
@@ -4976,7 +4982,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     else goTo(c.at, c.target);
     // The work of the same task at the end of the walk (#66: a press walked to the heap of rods,
     // and at the mat the act of the button puts a rod of the heap on the mat).
-    if (walking()) pendingPress = { key: null, task: taskOfCandidate(c), t: null, n: 1, id: btn?.id ?? null };
+    if (walking()) pendingPress = { key: null, task: taskOfCandidate(c), t: null, n: 1, id: btn?.id ?? null, from: { x: hero().position.x, z: hero().position.z } };
   }
   // The task of a candidate of the button: of its thing, its place, or its person (a finish).
   function taskOfCandidate(c) {
@@ -5857,9 +5863,36 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (!same && b.a.act === 'talk') return talkFar(b.a);
       return same;
     }
-    if (!b.child && !b.first && (state.tick - b.t) * STEP < SETTLE) return null;
+    // The button does not change under the finger (#184: "I pressed the buffalo button but I didn't
+    // ride!"): for SETTLE seconds after a change that the child did not make, a press does the act
+    // that the button showed before the change, while it is in reach; else nothing.
+    if (!b.child && !b.first && (state.tick - b.t) * STEP < SETTLE) {
+      const old = btnAll[btnAll.indexOf(b) - 1];
+      return old?.a ? candidates().find((c) => matches(c, old.key)) ?? null : null;
+    }
     if (b.deferred) return { wait: true, key: b.key };
     return b.a;
+  }
+  // A press that cannot do its act now: a short sound and a small shake of the button say "not
+  // now" (#184: a press with no answer looks like a broken button). why: the reason (for the robot
+  // child, #183).
+  function nope(id, why, extra = {}) {
+    emit({ type: 'nope' });
+    emit({ type: 'press', id, act: null, done: false, why, nope: true, ...extra });
+  }
+  // The acts that end a part of a work (a commit, #184): a press from away walks to the place and
+  // stops there, so that the child sees the thing first; the next press does the act.
+  const COMMITS = new Set(['quench', 'give', 'cross']);
+  const FAR_COMMIT = 2.5; // half blocks: a walk longer than this is a walk from away
+  // A press with no act while the person of the work shows the first step (#184: "Em giữ nút
+  // lớn…" came before the knife, and a hold of 3 s did nothing): the person says to watch first.
+  function waitShow(id) {
+    const key = workHere();
+    if (!key || !mentoring.showing(key)) return false;
+    const who = data.mentors?.mentors?.[key]?.person;
+    if (who && getEntity(state, who) && !getEntity(state, who).hidden) emit({ type: 'open', screen: 'callout', id: who, textKey: addressed(who, 'mentor.wait.show'), params: {} });
+    nope(id, 'show');
+    return true;
   }
   // The action button (or E): do the act of the picture, and the target pulses once. An act that
   // goes on while the button is down starts with the hold of the button.
@@ -5893,7 +5926,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // Each press during the walk counts: a child who counts the presses (one bunch for each) gets
     // that many acts at the end of the walk.
     if (a?.wait) {
-      pendingPress = pendingPress?.key === a.key ? { ...pendingPress, n: pendingPress.n + 1 } : { key: a.key, task: null, t: null, n: 1, id: pid };
+      const from = { x: hero().position.x, z: hero().position.z };
+      pendingPress = pendingPress?.key === a.key ? { ...pendingPress, n: pendingPress.n + 1 } : { key: a.key, task: null, t: null, n: 1, id: pid, from, tapped: true };
       emit({ type: 'press', id: pid, act: null, wait: true, done: false });
       return;
     }
@@ -5903,18 +5937,21 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         emit({ type: 'press', id: pid, act: null, done: false, again: true });
         return;
       }
-      // A dim button does nothing; a press on an act that is gone pulses. why: the reason (for the
-      // robot child, #183): settle (the picture is younger than SETTLE), gone (the act of the
-      // picture is not in reach now), or none (no act).
-      if (button().a || id !== null) emit({ type: 'pulse', id: null });
+      // A dim button does nothing; a press on an act that is gone says "not now". why: the reason
+      // (for the robot child, #183): settle (the picture is younger than SETTLE, and the act of
+      // the picture before is not in reach), gone (the act of the picture is not in reach now), or
+      // none (no act).
       const now = button();
       const why = b && b !== now ? 'gone' : now.a ? 'settle' : 'none';
-      emit({ type: 'press', id: pid, act: null, done: false, why });
+      if (!waitShow(pid)) {
+        if (now.a || id !== null) nope(pid, why);
+        else emit({ type: 'press', id: pid, act: null, done: false, why });
+      }
       mentoring.touched();
       return;
     }
     if ((state.tick - markTick) * STEP < MARK_AGAIN && tapTick < markTick) {
-      emit({ type: 'press', id: pid, act: null, done: false, why: 'mark' });
+      nope(pid, 'mark');
       return;
     }
     if (actTick === state.tick && !a.hold && !a.go) {
@@ -5930,6 +5967,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function runAct(a, id, walked = false) {
     if (a.hold) {
       if (!walked) hold(true, id);
+      return;
+    }
+    // A commit is never the end of a walk from away (#184: a press from the bellows walked to the
+    // anvil and dipped the bar at once, and the child never saw the bar): the hero stands there,
+    // and the next press does the act. A step to the thing (FAR_COMMIT or less) is no walk, and a
+    // walk after a tap on the thing is the choice of the child.
+    if (walked === 'far' && COMMITS.has(a.act)) {
+      pendingPress = null;
+      emit({ type: 'press', id, act: null, done: false, arrive: a.act });
       return;
     }
     // A press that walks to the work: the act of its picture comes at the end of the walk.
@@ -5957,6 +6003,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // A press that waits for the end of a walk: the act of its picture as soon as it is in reach (or
   // the work of its task, after a press that walks to the work); else, PRESS_WAIT seconds after
   // the end of the walk, nothing (the button pulses). A walk that ends stuck does not come near.
+  // The walk of a press: 'far' when the hero walked more than FAR_COMMIT half blocks from the place
+  // of the press, and the walk is not the walk to a tapped thing (a tap chooses the thing in view: a
+  // tap on bà lang and a press give the basket, #169), else true.
+  const farFrom = (p) => (p.from && distHb(p.from, hero().position) > FAR_COMMIT && !p.tapped ? 'far' : true);
   function stepPending() {
     if (!pendingPress || walking()) return;
     pendingPress.t ??= state.tick;
@@ -5973,13 +6023,34 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // The act is of the child (a press of the child): the next picture is a change of the child
       // and is the act at once (#68: after a pick at the end of a walk, the next press did nothing).
       lastChild = state.tick;
-      runAct(a, p.id, true);
+      runAct(a, p.id, farFrom(p));
       return;
+    }
+    // The act of the picture is not here (#184: seven presses during the walk to a bed of the
+    // healer, and nothing): the act of the picture among all the acts in reach, else the act of
+    // the button when it is a work of the same task. A press is never lost.
+    const keyTask = (key) => {
+      const target = String(key ?? '').split('|')[1];
+      const e = getEntity(state, target);
+      return e ? taskOfCandidate({ target }) : null;
+    };
+    if (a && p.key) {
+      const same = candidates().find((c) => matches(c, p.key));
+      const task = keyTask(p.key);
+      const work = !same && task && !WORKLESS.has(a.act) && !a.go && taskOfCandidate(a) === task ? a : null;
+      const next = same ?? work;
+      if (next) {
+        p.n -= 1;
+        p.t = state.tick;
+        if (p.n <= 0) pendingPress = null;
+        lastChild = state.tick;
+        runAct(next, p.id, farFrom(p));
+        return;
+      }
     }
     if ((state.tick - p.t) * STEP >= PRESS_WAIT) {
       pendingPress = null;
-      emit({ type: 'pulse', id: null });
-      emit({ type: 'press', id: p.id, act: null, done: false, why: 'walk' });
+      nope(p.id, 'walk');
       mentoring.touched();
     }
   }

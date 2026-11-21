@@ -1779,6 +1779,14 @@ export async function mountVillage(ctx, params = {}) {
       case 'hud': updateHud(); return;
       case 'sound': ctx.bus.emit('sound', ev.sound); return;
       case 'tapfx': showTap(ev.x, ev.y, ev.h); return;
+      case 'nope':
+        // A press that cannot do its act now: a short sound and a small shake say "not now", never
+        // silence (#184).
+        actBtn.classList.remove('shake');
+        void actBtn.offsetWidth;
+        actBtn.classList.add('shake');
+        ctx.bus.emit('sound', 'nope');
+        return;
       case 'pulse':
         // A press while a new picture settles, with the act of the old picture gone: the button
         // pulses once (#60).

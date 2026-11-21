@@ -131,7 +131,12 @@ test('the help of the give makes the healer the place of the next press, with he
   assert.equal(session.action()?.act, 'give', JSON.stringify(session.action()));
   session.command({ type: 'hands', id: session.action()?.id });
   run(session, 3);
-  assert.ok(events.some((e) => e.type === 'nope' || e.type === 'given'), 'the press gives the basket');
+  // A press from away walks to her and stops there; the next press gives (#184).
+  if (events.some((e) => e.type === 'press' && e.arrive === 'give')) {
+    session.command({ type: 'hands', id: session.action()?.id });
+    run(session, 3);
+  }
+  assert.ok(events.some((e) => e.type === 'given' || (e.type === 'press' && e.done && e.act === 'give')), 'the press gives the basket');
   assert.ok(!events.some((e) => e.type === 'pick' && e.id === 'hero'), 'no bunch taken');
 });
 
