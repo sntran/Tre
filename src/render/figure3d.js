@@ -269,6 +269,9 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
   let targetSpot = null;
   let ghost = null; // { look, x, y, z, facing } in half blocks
   let seeing = new Set(); // the figures in front of the work: pale and see-through (#147)
+  // The figures that show through what covers them as an outline, as the hero does: a post behind
+  // a soldier of a raid (#186: a see-through soldier was a ghost to a child of five).
+  let through = new Set();
   // Dust puffs: small pale boxes behind a running hero.
   const dust = new THREE.InstancedMesh(box, new THREE.MeshBasicMaterial({ color: new THREE.Color(C.paperDeep), transparent: true, opacity: 0.7, depthWrite: false }), MAX_PUFFS);
   dust.frustumCulled = false;
@@ -547,7 +550,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
           hulls.setColorAt(n, hullColor);
           plain.array[n] = (p.mark ? 1 : 0) + (see ? 2 : 0);
           n += 1;
-          if (f.control && xn < MAX_HERO_PARTS && camera) {
+          if ((f.control || through.has(f.id)) && xn < MAX_HERO_PARTS && camera) {
             xSelf.setMatrixAt(xn, tmp.multiplyMatrices(m4, local.makeScale(w, h, d)));
             nearM.makeTranslation(near.x, near.y, near.z).multiply(m4);
             xMask.setMatrixAt(xn, tmp.multiplyMatrices(nearM, local.makeScale(w, h, d)));
@@ -673,8 +676,9 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
     // The target of the action button (an entity id, or null), the place of a target with no
     // figure (spot in half blocks: { x, y, z, r }), and the ghost of a thing on a line.
     // The figures in front of the work (entity ids): they draw pale and see-through (#147).
-    see(ids = []) {
+    see(ids = [], throughIds = []) {
       seeing = new Set(ids);
+      through = new Set(throughIds);
     },
     mark(id = null, spot = null, ghostOf = null) {
       targetId = id;

@@ -797,6 +797,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // The figures in front of a point of the work draw pale and see-through (#147). The points of
   // the work in view, near the hero. Each few steps.
   let seeIds = new Set();
+  let throughIds = new Set();
   function stepSeeThrough() {
     if (state.tick % 5 !== 0) return;
     const h = hero()?.position;
@@ -822,6 +823,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const pale = bigs.length ? [...seeThrough(bigs, [{ ...h, heights: HERO_HEIGHTS }], viewAz, VIEW.elevation, (f) => f.size.r)] : [];
     if (!pts.length && !still) {
       seeIds = new Set(pale);
+      throughIds = new Set();
       return;
     }
     const figs = state.entities.filter((e) => e.position && Math.hypot(e.position.x - h.x, e.position.z - h.z) <= SIGHT_NEAR)
@@ -832,6 +834,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // not move for this; each other person, animal, or Nghé in front of the work, the hero, or the
     // speaker steps to a free spot beside it.
     seeIds = new Set(pale);
+    throughIds = new Set();
     const speaking = talker && (state.tick - talker.tick) * STEP < TALK_HOLD ? getEntity(state, talker.id) : null;
     // Gióng has his own rule of spots (stepRider): he takes a new spot when he hides the work, the
     // hero, or the speaker.
@@ -857,10 +860,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const others = figs.filter((f) => !RIDER_IDS.has(f.id) && f.id !== 'npc:giong-boy' && f.id !== 'hero' && f.id !== taskPerson && f.id !== chosen?.id && !nextTo(f) && !animalNear(f) && !inScene(f) && !getEntity(state, f.id)?.follow);
     for (const id of seeThrough(others, guard, viewAz, VIEW.elevation, (f) => f.size.r)) {
       const e = getEntity(state, id);
-      // An enemy of a raid keeps its place on the road (the count is its place): in front of a post
-      // it draws pale, so that the post shows (#166: the soldier covered post 2).
+      // An enemy of a raid keeps its place on the road (the count is its place), and it never
+      // draws pale (#186: "Is the ghost not the real one?"): the post behind it shows through it as
+      // an outline, as the hero does behind a house (#166: the soldier covered post 2).
       if (String(id).startsWith('raider:')) {
-        seeIds.add(id);
+        const fig = figs.find((f) => f.id === id);
+        for (const post of query(state, 'position').filter((x) => String(x.id).startsWith('post:'))) {
+          if (seeThrough([fig], [post.position], viewAz, VIEW.elevation, (f) => f.size.r).size) throughIds.add(post.id);
+        }
         continue;
       }
       const pointsFor = id === speaking?.id ? pts : guard;
@@ -3145,7 +3152,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // Raids (data/raids.json, src/core/world/raids.js, and src/core/world/systems/raid.js) -----
 
   // Seconds that an enemy stops at each post: in the first two raids of a tool, and after a loss.
-  const RAID_STOP = Object.freeze({ first: 4, lost: 6 });
+  // A soldier waits at a post at most 4 s (#186: "I am waiting and waiting.").
+  const RAID_STOP = Object.freeze({ first: 4, lost: 4 });
   const AIM_HOLD_GRADE = 3; // the highest grade where the aimed enemy stands at every raid
   const TRAP_WAIT_GRADE = 2; // the highest grade where a raid with a trap ask waits for the trap (#185)
   const AIM_HOLD_RAIDS = 4; // from grade 4, the raids of the slingshot where it stands too
@@ -4180,15 +4188,18 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function fireSling() {
     const count = pullCount();
     slingPull = null;
-    if (count >= 1 && !noPost()) shootFromWall(count, POST_STEP);
+    if (count >= 1 && !noPost(count)) shootFromWall(count, POST_STEP);
   }
   // At grades K to 3, a count that ends while no enemy stands at a post throws no stone (#141: a
   // right count must always hit): the coach says to wait (one time in a raid), and the post where
   // the next enemy will stand glows. Return true when the stone stays.
-  function noPost() {
+  // One rule for "at a post" (#186: "But the circle WAS on him at hai!"): an enemy within the reach
+  // of a hit of the ring of the count is there, and the stone flies.
+  function noPost(count = 0) {
     const r = raidEnt()?.raid;
     if (!r?.aimHold || raidTeach.demo) return false;
     const live = r.enemies.filter((e) => e.state !== 'retreat' && e.state !== 'gone');
+    if (live.some((e) => count > 0 && Math.abs(along(r, e) - count) <= r.sling.hit)) return false;
     if (!live.length || live.some((e) => !e.aside && postAt(r, along(r, e)))) return false;
     // The next post of the enemy nearest to the wall: the post in front of it.
     const near = live.reduce((a, e) => (along(r, e) < along(r, a) ? e : a));
@@ -4223,6 +4234,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const r = raidEnt()?.raid;
     if (!r || r.result || !toolLines.list.length) return;
     if (r.hold || busy || screen) return;
+    // No line of the rules during a count, or while the stone flies (#186: "một", and at once
+    // "Đếm cột từ chỗ cháu đứng: cột này là một.").
+    if (slingPull || trapPull || r.stones.some((st) => !st.done)) return;
     // A line that waits for a tool (the slingshot after the first trap, #165) comes after it.
     const after = toolLines.list[0]?.after;
     if (after && !r.usedTools?.includes(after)) return;
@@ -4251,7 +4265,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // while pressing is slower than the mentors (#67). For grades K to 2 the wait is longer (#93): a
   // child of six who says "một, hai, ba" aloud and presses at each word can take more than 1.8
   // seconds between two presses, and then each press flew alone.
-  const FIRE_WAIT = Number(profile.grade) <= 2 ? 2.4 : 1.8;
+  // A slow child waits about 3 s between two presses (#183): the wait up to grade 2 is 3.5 s, so
+  // that the count still adds up (children of eight answer one and a half to two times as slowly as
+  // adults, Kail 1991).
+  const FIRE_WAIT = Number(profile.grade) <= 2 ? 3.5 : 1.8;
   function pullCount() {
     const r = raidEnt()?.raid;
     if (!slingPull || !r) return 0;
@@ -7619,6 +7636,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     work: () => workNow(),
     // The figures that draw pale and see-through: they stand in front of the work (#147).
     seeThrough: () => seeIds,
+    // The figures that show through what covers them as an outline: a post behind a soldier (#186).
+    showThrough: () => throughIds,
     // A riddle goes on near the hero (for the robot child, tools/robot).
     puzzleHere: () => puzzles.here(),
     // The last tap: the id of its target (an entity), or null (#47).

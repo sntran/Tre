@@ -14,7 +14,7 @@ const start = [
   { read: true },
   { wait: 15 },
 ];
-const presses = (n) => [...Array.from({ length: n }, () => [{ do: { type: 'hands' } }, { wait: 0.25 }]).flat(), { wait: 4 }];
+const presses = (n) => [...Array.from({ length: n }, () => [{ do: { type: 'hands' } }, { wait: 0.25 }]).flat(), { wait: 6 }];
 
 test('after a stone that falls short or flies past, the elder at the wall says where it fell; after two misses he points at the enemy and then at the posts', async () => {
   let s = null;

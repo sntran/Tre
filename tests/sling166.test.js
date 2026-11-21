@@ -97,8 +97,8 @@ test('the lines: count words, the place of the stone, and what is left', () => {
   assert.equal(fill(vi['raid.hit.rice.more'], { n: 'một', ball: 'nắm cơm' }), 'Nó ăn rồi! Thêm một nắm cơm nữa, nó sẽ no.');
 });
 
-test('an enemy in front of a post draws pale, and the example of the coach waits for the end of a count of the child', () => {
+test('an enemy in front of a post never draws pale: the post shows through it (#186), and the example of the coach waits for the end of a count of the child', () => {
   const src = readFileSync(new URL('../src/core/session.js', import.meta.url), 'utf8');
-  assert.match(src, /if \(String\(id\)\.startsWith\('raider:'\)\) \{\n\s+seeIds\.add\(id\);/);
+  assert.match(src, /if \(String\(id\)\.startsWith\('raider:'\)\) \{[^}]*throughIds\.add\(post\.id\)/s);
   assert.match(src, /if \(slingPull\) teach\.demoDue = true;/);
 });

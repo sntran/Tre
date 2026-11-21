@@ -794,3 +794,13 @@ In the short plays after #182, presses were lost in four places, with no sound a
 - **Faces that a child can read:** the face of the owner on each mat is 44 points wide.
 - **Two touches for each sack up to grade 1:** with empty hands, a tap on a mat walks to the pile, takes a sack, and walks to that mat; a press puts it.
 - **Tests:** `tests/share185.test.js`; the robot dealer at the share after the raid of the soldiers.
+
+## The soldiers on the road (#186)
+
+- **A soldier never draws pale.** A child of five reads a see-through soldier as a ghost. The post behind a soldier shows through him as an outline, as the hero does behind a house (`showThrough()` of the session, `see(ids, throughIds)` of `src/render/figure3d.js`).
+- **A soldier who retreats leaves the road in 2 s** (`RETREAT_TIME` in `src/core/world/raids.js`).
+- **One rule for "at a post".** A soldier within the reach of a hit of the ring of the count (`sling.hit`, 1.5 half blocks) is there: the stone flies, and "Lính chưa tới cột nào" comes only when no soldier is at a post or on the ring.
+- **No line of the rules during a count,** or while the stone flies.
+- **A soldier waits at a post at most 4 s**, also after a loss (`RAID_STOP`).
+- **A slow count adds up.** Up to grade 2 the stone flies 3.5 s after the last press (`FIRE_WAIT`), so that a child who says each number aloud and waits 3 s between presses still gets the count. The stone lands at most 1.5 s after the throw, and the hero stays while it flies.
+- **Tests:** `tests/raid186.test.js`; the robot slow child at the raid of the soldiers.

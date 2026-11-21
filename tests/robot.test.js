@@ -25,7 +25,7 @@ for (const night of [false, true]) {
   // come by day only, so the steps of the raid play by day.
   if (!night) CASES.push({ name: 'raid-soldiers', kind: 'dealer', night, steps: 26, commands: 80 });
   // A child who counts slowly: the count still adds up (#186).
-  CASES.push({ name: 'raid-soldiers', kind: 'slow', night, todo: night ? '#186: the slow count' : null });
+  CASES.push({ name: 'raid-soldiers', kind: 'slow', night });
   CASES.push({ name: 'bridge-mashing', kind: 'presser', night, todo: night ? null : '#191: the loop of the plank' });
   CASES.push({ name: 'forge-horse', kind: 'presser', night, grade: 3 });
   CASES.push({ name: 'puzzle-ferry', kind: 'star', night, todo: '#190: the loop of the riddle, the fisher at night' });

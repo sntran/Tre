@@ -28,7 +28,8 @@ test('the first raid of the slingshot: the first enemy stops on the road and wai
   run(raid, 4);
   assert.equal(raid.hold, null, 'the first hit: the raid goes on');
   run(raid, 20);
-  assert.ok(raid.enemies.length >= 2, 'the next wave comes');
+  // The enemies so far (an enemy that retreats leaves the road in 2 s, #186).
+  assert.ok(raid.count >= 2, 'the next wave comes');
   // A raid that the child knew before does not wait.
   const known = createRaid(raids, 'river', 0, null, []);
   assert.equal(known.hold, null);
@@ -64,7 +65,7 @@ test('the big button is the slingshot: each press is one post, the posts up to t
     // One press: a pull to the first post. No stone flies before one second.
     press, { wait: 0.5 },
     { expect: [{ event: 'shoot', not: true }] },
-    { until: { event: 'shoot', timeout: 3 } },
+    { until: { event: 'shoot', timeout: 5 } },
     { wait: 3 },
     // As many presses as the post of the serpent, a little apart: the rice ball reaches it.
     ...Array.from({ length: posts }, () => [press, { wait: 0.6 }]).flat(),

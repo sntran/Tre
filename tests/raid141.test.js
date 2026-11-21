@@ -165,7 +165,13 @@ test('at grade 1, a count that ends while no enemy is at a post throws no stone,
   const a = s.session.action();
   assert.equal(a?.act, 'sling');
   s.session.command({ type: 'hands', id: a.id });
-  s.run(3);
+  // The scout stays between the two posts until the count ends (the wait of a count is 3.5 s at
+  // grades K to 2, #186; in that time a scout walks to the next post).
+  const keep = { x: e.x, z: e.z };
+  for (let i = 0; i < 4 / STEP; i++) {
+    Object.assign(e, keep);
+    s.run(STEP);
+  }
   assert.equal(raid.stones.length, 0, 'no stone');
   assert.equal(raid.shots, shots);
   assert.ok(s.got.lines.includes('raid.nopost'), s.got.lines.join(', '));

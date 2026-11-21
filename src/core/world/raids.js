@@ -274,6 +274,7 @@ export function awayFrom(raid, p) {
 // The distance of a point along the road from the wall, and to the side of the line of the road.
 // The post where an enemy stands (#135): the post within AT_POST half blocks of its distance, or null.
 export const AT_POST = 1;
+export const RETREAT_TIME = 2; // seconds: an enemy that retreats is gone after this (#186)
 export const postAt = (raid, d) => raid.posts.find((q) => Math.abs(q.d - d) <= AT_POST) ?? null;
 // The distance of the last post from the wall, or null with no posts.
 export const lastPost = (raid) => (raid.posts.length ? Math.max(...raid.posts.map((q) => q.d)) : null);
@@ -418,7 +419,10 @@ function tickEnemy(raid, e, dt, ctx, out) {
   e.cool = Math.max(0, e.cool - dt);
   e.shield = Math.max(0, e.shield - dt);
   if (e.state === 'retreat') {
-    if (walkTo(e, e.from, kind.speed, dt)) {
+    // An enemy that retreats leaves the road in RETREAT_TIME seconds (#186: "Why is he still
+    // there?"): it walks away fast, and then it is gone.
+    e.away = (e.away ?? 0) + dt;
+    if (walkTo(e, e.from, kind.speed * 3, dt) || e.away >= RETREAT_TIME) {
       e.state = 'gone';
       out.push({ type: 'gone', id: e.id });
     }
