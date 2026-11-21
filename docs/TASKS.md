@@ -745,3 +745,15 @@ In the play test of #135 to #139, the children of all grades met the same small 
 - **The piece that the line names stays in view.** At the check of a cut, the glow of the named piece stays until the next press of the child (`stay` of a spawn step, `untilPress`); for a long piece, the part that is too long glows. The line says what is compared: "Khúc này dài hơn hai khúc kia." (`woodcutter.longer.many`), "Khúc này dài hơn khúc kia.", "Khúc này dài quá, dài hơn các khúc kia.".
 - **One person, one way to call the child.** A line that all the mentors use takes the address of its person: the woodcutter (`address: em` in `data/npcs.json`) says "Giờ đến lượt em." (`addressLines` in `data/world/mentors.json`, `addressed` in the session).
 - **Tests:** `tests/see145.test.js`; `tests/count98.test.js` and `tests/wood118.test.js` follow the new glow and line.
+
+## The robot child (#174)
+
+The robot child (`tools/robot/`) plays the scenes of `tests/stories/` headless and checks the laws of progress (`LAWS` in `tools/robot/robot.mjs`). `tests/robot.test.js` plays six scenes by day and at night, 120 commands each. The long sweep plays all the scenes: `node tools/robot/sweep.mjs --commands 120 --kinds star,presser --workers 4`.
+
+The long sweep at the end of #174 (440 plays, 536 s) found 30 things that are still open:
+
+- **The same line again** (7). At the bridge, a presser hears "Chỗ còn lại ngắn quá…" again and again (`bridge-mashing`, `mentor-bridge`, `time-limit`). At bà lang at night, a presser hears "Bó tía tô đây." again and again. At the stakes, "Đi tới vòng tròn này, rồi cắm nhé." again and again (`practice-cam-coc`). In the full ferry riddle, the fail line and the "again" line come in turn (the robot does not plan the moves).
+- **A talk with no line** (10). The smith, Gióng the hero, bé Gióng, and the woodcutter in some scenes, by day and at night (`calling`, `giong-cart`, `placement-girl`, `staffs-grade1`, `stars-iron`, `staffs-star`, `way-trau-son`). At the way to Trâu Sơn, Gióng says the same long line three times.
+- **No progress in an open work** (13). The stakes of the fisher (`trial-fisher`, `ferry-k`, `puzzle-ferry` at night): the robot does not reach the ring. The drum (`practice-mua-trong`, `practice-xom-ruong`): the robot does not keep the beat. The event of the cart opens in the ferry scenes, and the robot stays at the ferry.
+
+Some of these are limits of the robot (the beat, the plan of the riddle), and some are true dead ends for a child. Each one needs a look in a play before a change.
