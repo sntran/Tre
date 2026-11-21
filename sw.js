@@ -208,6 +208,7 @@ const FILES = [
   'src/core/naming.js',
   'src/core/origins.js',
   'src/core/speech.js',
+  'src/core/stars.js',
   'src/core/parentgate.js',
   'src/core/hamlet.js',
   'src/core/examples.js',
