@@ -316,7 +316,13 @@
           "dialogue": "grandma.morning"
         },
         {
+          "when": {
+            "dark": true
+          },
           "dialogue": "grandma.home"
+        },
+        {
+          "dialogue": "grandma.day"
         }
       ],
       "nameKey": "npc.grandma.name"

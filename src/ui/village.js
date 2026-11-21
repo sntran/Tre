@@ -1977,7 +1977,9 @@ export async function mountVillage(ctx, params = {}) {
     const base = canvas.getBoundingClientRect();
     countTap({ x: r.left + r.width / 2 - base.left, y: r.top + r.height / 2 - base.top }, true);
     sayStar(m);
-    send({ type: 'tap', target: { ground: { x: m.x, y: m.y, h: m.h, thing: false, object: null, goal: true } } });
+    // The star of a riddle is a tap on its person: the walk ends with the riddle (#181).
+    if (m.side && m.person) send({ type: 'tap', target: { person: m.person } });
+    else send({ type: 'tap', target: { ground: { x: m.x, y: m.y, h: m.h, thing: false, object: null, goal: true } } });
     nearAgain();
   };
   const tappable = (el) => {
@@ -2196,7 +2198,8 @@ export async function mountVillage(ctx, params = {}) {
       } else if (it.kind === 'star') {
         el = button(null, go(() => {
           sayStar(it.mark);
-          send({ type: 'tap', target: { ground: { x: it.mark.x, y: it.mark.y, h: it.mark.h, thing: false, object: null, goal: true } } });
+          if (it.mark.side && it.mark.person) send({ type: 'tap', target: { person: it.mark.person } });
+          else send({ type: 'tap', target: { ground: { x: it.mark.x, y: it.mark.y, h: it.mark.h, thing: false, object: null, goal: true } } });
         }), { cls: it.edge ? 'village-map-star edge' : 'village-map-star', icon: 'ui/star', aria: t('ui.star') });
         // A star out of the map: on the edge, with an arrow to it (#142).
         if (it.edge) el.style.setProperty('--angle', `${it.angle}rad`);

@@ -42,7 +42,7 @@
     { "need": [10, 14], "lost": 4, "sizes": [1], "skill": "math.count.120", "level": 2 }
    ],
    "extra": 0, "reward": { "egg": 1 },
-   "lines": { "start": "event.duck.start", "short": "event.duck.short", "over": "event.duck.over", "done": "event.duck.done", "wait": "event.duck.wait" }
+   "lines": { "start": "event.duck.start", "short": "event.duck.short", "over": "event.duck.over", "done": "event.duck.done", "counted": "event.duck.counted", "wait": "event.duck.wait" }
   }
  ]
 }

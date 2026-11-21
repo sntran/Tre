@@ -1,6 +1,7 @@
 // Conditions on story flags. Maps, dialogue, and quests use the same form:
 // { "flags": ["a", "b"], "notFlags": ["c"], "anyFlags": ["d", "e"], "grade": { "min": 3 },
-//   "items": { "iron": 6 }, "any": [ {...}, {...} ] }
+//   "items": { "iron": 6 }, "dark": true, "any": [ {...}, {...} ] }
+// dark: true at dusk and at night, false in the day (state.dark).
 // All parts must be true. An empty or missing condition is always true.
 
 export function check(when, state) {
@@ -18,6 +19,7 @@ export function check(when, state) {
     const inv = state.inventory ?? {};
     for (const [item, count] of Object.entries(when.items)) if ((inv[item] ?? 0) < count) return false;
   }
+  if (when.dark !== undefined && Boolean(state.dark) !== when.dark) return false;
   if (when.any && !when.any.some((c) => check(c, state))) return false;
   if (when.calling !== undefined && (state.calling ?? null) !== when.calling) return false;
   return true;

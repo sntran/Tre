@@ -193,7 +193,7 @@
       "expect": [
         {
           "text": {
-            "shown": "event.duck.done"
+            "shown": "event.duck.counted"
           }
         },
         {

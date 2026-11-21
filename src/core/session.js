@@ -284,7 +284,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   const hero = () => getEntity(state, 'hero');
   const heroCell = () => ({ x: hero().position.x / 2, y: hero().position.z / 2 });
   const groundY = (x, y) => env.groundY(x, y) / 2; // the top of the ground of a cell, in blocks
-  const cond = () => conditionState(profile);
+  // The state of the conditions of the story: the profile, and the dark (dusk and night, #181: the
+  // line of rest came at 9 in the morning).
+  const cond = () => ({ ...conditionState(profile), dark: isDark() });
+  function isDark() {
+    return Boolean(state?.clock) && ['dusk', 'night'].includes(timeOfDay(state.clock).part);
+  }
 
   // Start on a map (the map of a region on the plane). mapId: the map (or the map of the save, or
   // the start map; the id of a place of a region is its map). params: at (the hero cell on the
@@ -2703,7 +2708,17 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     emit({ type: 'hud' });
     save('event');
     raiseLine(`event-${id}`);
-    say(def.lines.done, {}, null, def.person);
+    // The farmer counts the ducks aloud by twos when the child calls her (#181: at the end she said
+    // only "Đủ đàn rồi!"): "hai, bốn, sáu, tám, mười. Đủ đàn rồi!"
+    const n = tz.zone.need ?? 0;
+    if (def.lines.counted && n > 0) {
+      const counts = [];
+      for (let k = 2; k < n; k += 2) counts.push(k);
+      counts.push(Math.min(150, n));
+      // A count aloud: "hai, bốn, sáu" (no "và" before the last word).
+      const list = counts.slice(1).reduce((a, k) => ({ key: 'count.next', params: { a, b: { key: `num.${k}` } } }), { key: `num.${counts[0]}` });
+      say(def.lines.counted, { list }, null, def.person);
+    } else say(def.lines.done, {}, null, def.person);
     queue(() => clearEvent(id));
   }
 
@@ -2941,7 +2956,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       let id = pickTalk(data.npcs.npcs[who.id], profile);
       // At the place of the soldiers, Gióng says that they are here (#150: the line of "far away"
       // came at the place); "far away" is for the village and the road.
-      if (id === 'giong.ready') id = giongLine();
+      if (id === 'giong.ready') {
+        // The talk is heard as its pick too, so that a press next to Gióng does not say it again
+        // (#181: "Bạn đứng ở ngã tư…" again at each press).
+        heard.add(id);
+        id = giongLine();
+        // The line names the crossroads: the view shows it, with its star (#181).
+        if (id === 'giong.here') crossroadsView();
+      }
       // The people of a scene of the legend stand side by side for the camera, the person of the
       // talk in the middle (#158).
       if (data.dialogues.get(id)?.mark === 'legend') lineUp(at.entity ?? `npc:${who.id}`);
@@ -3028,6 +3050,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // The line of Gióng before the raids of the soldiers (#155, #163): true at the place and at the
   // time. After a loss, they left and come back in the morning; in the dark, the trip waits for the
   // morning; at their place, they are here; far from them, the way with things that the child sees.
+  function crossroadsView() {
+    const h = hero()?.position;
+    if (!h) return;
+    const walls = map.encounters.filter((e) => soldierRaid(e.raid)).map((e) => data.raids.raids[e.raid].wall).filter(Boolean)
+      .map(([x, y]) => ({ x: x * 2, y: env.groundY(x, y), z: y * 2 }))
+      .sort((a, b) => Math.hypot(a.x - h.x, a.z - h.z) - Math.hypot(b.x - h.x, b.z - h.z));
+    if (walls[0]) emit({ type: 'workView', key: 'crossroads', points: [{ ...h }, walls[0]], sight: [walls[0]] });
+  }
   function giongLine() {
     if (soldiersAway()) return 'giong.rest';
     if (darkNow()) return 'giong.night';
@@ -3151,7 +3181,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // raid does not wait and the child had some time with the tool before (see the step).
     const lines = [];
     // The drag of the slingshot comes in a later raid, after the child knows the presses (#67).
-    const drag = raid.tools.includes('sling') && !teach.includes('sling') && !profile.flags['raid.tool.drag'] && data.raids.toolLines?.drag;
+    // The drag of the slingshot only from grade 3 (#181: three young children did not understand "the
+    // finger on you", and a drag only walked the hero).
+    const drag = Number(profile.grade ?? 1) >= 3 && raid.tools.includes('sling') && !teach.includes('sling') && !profile.flags['raid.tool.drag'] && data.raids.toolLines?.drag;
     for (const tool of raid.tools) {
       const line = data.raids.toolLines?.[tool];
       // The flag of the tool comes when the child uses it, or with a win (#141: each lost try brought
@@ -3366,7 +3398,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // An enemy that takes more hits: the line says how many more (#166: "Nó ăn rồi!", and no
       // circle filled, because the circle of an enemy fills only when it goes back).
       const more = ev.left > 0 && raid.enemies.some((e) => e.id === ev.target && e.state !== 'retreat' && e.state !== 'gone');
-      const key = `${rice ? 'raid.hit.rice' : 'raid.hit'}${more ? '.more' : ''}`;
+      // A soldier who holds rice says so in the same line (#181: "Thêm một hòn đá nữa, lính sẽ lui."
+      // and at once "lính này cần trúng hai lần").
+      const foe = raid.enemies.find((e) => e.id === ev.target);
+      if (foe) foe.hitTick = state.tick;
+      const key = more && foe?.tookRice && !rice ? 'raid.hit.took' : `${rice ? 'raid.hit.rice' : 'raid.hit'}${more ? '.more' : ''}`;
       if (hitter) emit({ type: 'open', screen: 'callout', id: hitter.id, textKey: key, params: { ...raidWords(), n: { key: `num.${Math.min(10, ev.left)}` } } });
       return;
     }
@@ -3628,6 +3664,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     emit({ type: 'hud' });
   }
+  const HIT_TAKE = 2; // seconds: a take this soon after a hit on the same soldier goes into the line of the hit
   // An enemy at the gate took some goods: they leave the basket (never below nothing).
   function raidTake(ev) {
     // A take has its line (#124: a take was a sound only, and a boy asked if he won), also at a
@@ -3641,7 +3678,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // An enemy that the child hit and that still took: it needed one more hit (#135).
     const foe = r?.enemies.find((e) => e.id === ev.id);
     const more = foe && foe.hits > 0 && foe.hits < foe.max;
-    if (who) emit({ type: 'open', screen: 'callout', id: who.id, textKey: more ? `${key}.more` : key, params: { ...raidWords(), ...(more ? { n: { key: `num.${foe.max}` } } : {}) } });
+    if (foe) foe.tookRice = true;
+    // Right after a hit on this soldier, one line says both (#181): "Trúng rồi! Lính này cầm gạo:
+    // còn hai hòn đá nữa." It takes the place of the line of the hit.
+    const hitter = raidSpeaker();
+    const rice = data.raids?.raids[r?.id]?.words?.ball === 'raid.ball.rice';
+    if (more && !rice && hitter && foe.hitTick !== undefined && (state.tick - foe.hitTick) * STEP < HIT_TAKE) {
+      emit({ type: 'open', screen: 'callout', id: hitter.id, textKey: 'raid.hit.took', params: { ...raidWords(), n: { key: `num.${Math.min(10, foe.max - foe.hits)}` } } });
+    } else if (who) emit({ type: 'open', screen: 'callout', id: who.id, textKey: more ? `${key}.more` : key, params: { ...raidWords(), ...(more ? { n: { key: `num.${foe.max}` } } : {}) } });
     const took = {};
     for (const [item, n] of Object.entries(ev.take ?? {})) {
       const have = profile.inventory[item] ?? 0;

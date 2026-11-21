@@ -514,6 +514,16 @@
       }
     },
     {
+      "id": "grandma.day",
+      "start": "n1",
+      "nodes": {
+        "n1": {
+          "speaker": "grandma",
+          "textKey": "dlg.grandma.day.n1"
+        }
+      }
+    },
+    {
       "id": "grandma.home",
       "start": "n1",
       "nodes": {
