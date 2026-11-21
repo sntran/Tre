@@ -1529,7 +1529,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // The talks that the child heard in this visit (#49): a talk of a goal opens by itself one
   // time; after that, it opens only after a tap on the person (see the candidates of the button).
   const heard = new Set();
-  function talk(id) {
+  // The words of the greeting of a person: of its kind, else of its age (#174: Gióng has no
+  // greeting, and a talk with him in a practice said nothing).
+  const greetWords = (npc) => GREETS[data.npcs.npcs[npc]?.greet] ?? (data.npcs.npcs[npc]?.child ? GREETS.child : GREETS.grown);
+  // npc: the person of the talk. A talk with no line left for now (all its lines are said, and
+  // their conditions are past) gives the greeting of the person, so that a talk on the button
+  // always says a line (#150, #174: the robot pressed the talk of Gióng and nothing came).
+  function talk(id, npc = null) {
     if (!id) return;
     heard.add(id);
     noteKey(`talk:${id}`);
@@ -1538,7 +1544,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (!def) return;
       if (def.scene) sceneOf(def.scene);
       const d = { screen: 'dialogue', id, runner: createDialogue(def, cond()), opens: [] };
-      showLine(d, d.runner.view());
+      const view = d.runner.view();
+      showLine(d, view);
+      const words = !view && npc ? greetWords(npc) : null;
+      if (words) emit({ type: 'open', screen: 'callout', id: `npc:${npc}`, textKey: words[state.tick % words.length], params: { name: profile.hero.name } });
     });
   }
   // The scene of a talk (scene: { up, beside }, #113: "Gióng talks!! … But Gióng is not here with
@@ -2849,7 +2858,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // In a practice, a person who is not of the practice only greets the child: no talk of the
       // story opens there (#51).
       if (practice && !ofPractice(who.id)) {
-        const words = GREETS[data.npcs.npcs[who.id]?.greet ?? 'grown'];
+        // A person who lies still (bé Gióng) gives the line of the narrator that says so (lie: { talk }).
+        const lie = data.npcs.npcs[who.id]?.lie;
+        if (lie?.talk && !profile.flags?.[lie.unless]) {
+          talk(lie.talk, who.id);
+          return;
+        }
+        const words = greetWords(who.id);
         if (words) emit({ type: 'open', screen: 'callout', id: at.entity ?? `npc:${who.id}`, textKey: words[state.tick % words.length], params: { name: profile.hero.name } });
         return;
       }
@@ -2866,7 +2881,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // The people of a scene of the legend stand side by side for the camera, the person of the
       // talk in the middle (#158).
       if (data.dialogues.get(id)?.mark === 'legend') lineUp(at.entity ?? `npc:${who.id}`);
-      if (!comeFirst(id, who.id)) talk(id);
+      if (!comeFirst(id, who.id)) talk(id, who.id);
     }
     else if (who.kind === 'event') tapEvent(who.id);
     else if (who.kind === 'puzzle') puzzles.talk(who.id);
