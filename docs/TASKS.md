@@ -784,3 +784,13 @@ In the short plays after #182, presses were lost in four places, with no sound a
 - **The button does not change under the finger.** For 0.6 s after a change that the child did not make, a press does the act that the button showed before the change, while it is in reach.
 - The fisher says "Đi tới vòng tròn này, rồi cắm nhé." at most one time in 4 s; a press between gets "not now", the glow of the ring, and his point.
 - **Tests:** `tests/press184.test.js`; the robot child has no lost press in the short sweep.
+
+## The share stays the share (#185)
+
+- **One work at a time on the button.** While a work is open where the hero is (`workHere()`), the button never offers the start of a raid, an event, or the work of another task (`candidates()` in `src/core/session.js`).
+- **The share comes soon.** After a win, the things of the raid go 1.5 s after the last line (`OVER_WON` in `src/core/world/systems/raid.js`), and the first line of the share comes then: no press of an empty button.
+- **The soldiers wait for the trap up to grade 2** at every raid with a trap ask (`TRAP_WAIT_GRADE`), not only at the first raid of the traps.
+- **A loss names only a true cause:** soldiers who came while the child had no trap ("Lính tới khi cháu chưa cầm bẫy.", `raid.lost.notool`), a trap at another post, or the count only after a miss.
+- **Faces that a child can read:** the face of the owner on each mat is 44 points wide.
+- **Two touches for each sack up to grade 1:** with empty hands, a tap on a mat walks to the pile, takes a sack, and walks to that mat; a press puts it.
+- **Tests:** `tests/share185.test.js`; the robot dealer at the share after the raid of the soldiers.

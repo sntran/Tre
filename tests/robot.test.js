@@ -21,15 +21,16 @@ for (const name of ['staffs-grade1', 'forge-horse', 'trial-healer', 'raid-river-
 // The first line of the ferry says to press the boat before the boat is on the button (#190).
 CASES.find((c) => c.name === 'ferry' && !c.night).todo = '#190: the first line of the ferry';
 for (const night of [false, true]) {
-  // The share after the raid of the soldiers: the raid stays off the button (#185).
-  CASES.push({ name: 'raid-soldiers', kind: 'dealer', night, steps: 26, commands: 80, todo: '#185: the raid on the button at the share' });
+  // The share after the raid of the soldiers: the raid stays off the button (#185). The soldiers
+  // come by day only, so the steps of the raid play by day.
+  if (!night) CASES.push({ name: 'raid-soldiers', kind: 'dealer', night, steps: 26, commands: 80 });
   // A child who counts slowly: the count still adds up (#186).
   CASES.push({ name: 'raid-soldiers', kind: 'slow', night, todo: night ? '#186: the slow count' : null });
   CASES.push({ name: 'bridge-mashing', kind: 'presser', night, todo: night ? null : '#191: the loop of the plank' });
   CASES.push({ name: 'forge-horse', kind: 'presser', night, grade: 3 });
   CASES.push({ name: 'puzzle-ferry', kind: 'star', night, todo: '#190: the loop of the riddle, the fisher at night' });
   CASES.push({ name: 'healer-grade4', kind: 'walker', night });
-  CASES.push({ name: 'staffs-grade1', kind: 'walker', night, todo: night ? null : '#185, #187: a thing of bà lang at the staffs, the line of the hold' });
+  CASES.push({ name: 'staffs-grade1', kind: 'walker', night, todo: night ? null : '#187: the line of the hold' });
 }
 
 for (const c of CASES) {

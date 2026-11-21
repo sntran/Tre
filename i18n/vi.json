@@ -1200,6 +1200,7 @@
   "raid.lost.torch": "Đuốc rơi vào trong {wall} {n} lần.",
   "raid.lost.count": "Lần sau, {who} đứng ở cột nào, cháu bấm nút lớn bấy nhiêu lần nhé.",
   "raid.posts.count": "Cháu đếm cột từ chỗ cháu đứng: một, hai, ba, bốn.",
+  "raid.lost.notool": "{who} tới khi cháu chưa cầm bẫy.",
   "raid.lost.notrap": "Chưa có bẫy nào trên đường.",
   "raid.lost.trappost": "Bẫy chưa ở cột {post}.",
   "raid.trap.wrong": "Bẫy này ở cột {at}. Bẫy đặt ở cột {post} nhé.",

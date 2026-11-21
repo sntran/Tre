@@ -2000,18 +2000,20 @@ export async function mountVillage(ctx, params = {}) {
   const arrowAt = pooled(arrowPool, () => tappable(h('div', { class: 'edge-arrow' }, [h('div', { class: 'edge-star' }, [img('ui/star', 'star-pic'), face()])])));
   // The face of the owner of a mat of the share (#167).
   const ownerPool = [];
-  const OWNER = 30;
+  // The face of the owner on a mat of the share: at least 40 points wide (#185: the faces were too
+  // small to read, and a girl of grade 2 put a sack on the mat of Gióng and thought it was hers).
+  const OWNER = 44;
   const ownerAt = pooled(ownerPool, () => h('div', { class: 'mat-owner', 'aria-hidden': 'true' }, [face()]));
   // The face of a person in the disc of a star, or the picture of a thing (#154: the ore, a soldier,
   // the pots of bà lang), so that the child sees what is there.
-  function setFace(el, who, thing = null) {
+  function setFace(el, who, thing = null, size = 20) {
     const slot = el.querySelector('.star-face');
     const key = who ?? (thing ? `thing:${thing}` : '');
     if (slot.dataset.who === key) return;
     slot.dataset.who = key;
     const person = who ? speakerLookOf(ctx, who) : null;
     const look = person ?? (thing ? data.figures.figures[thing] ?? null : null);
-    slot.replaceChildren(...(look ? [portraitCanvas(ctx, look, { framing: person ? 'bust' : printFraming(look), size: 20 })] : []));
+    slot.replaceChildren(...(look ? [portraitCanvas(ctx, look, { framing: person ? 'bust' : printFraming(look), size })] : []));
     slot.classList.toggle('star-thing', !person && Boolean(look));
     slot.hidden = !look;
   }
@@ -2291,7 +2293,7 @@ export async function mountVillage(ctx, params = {}) {
       if (!f) continue;
       const q = view.project(f.x, f.y + 0.3, f.z + 0.9);
       const el = ownerAt(owners++);
-      setFace(el, who);
+      setFace(el, who, null, OWNER);
       el.style.transform = `translate(${q.x - OWNER / 2}px, ${q.y - OWNER / 2}px)`;
     }
     for (let i = owners; i < ownerPool.length; i++) ownerPool[i].hidden = true;

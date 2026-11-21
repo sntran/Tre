@@ -2131,6 +2131,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (!wz) return false;
     const z = wz.zone;
     // A tap on the place of a mat of the share says its count, as a tap on the mat does (#138).
+    if (/^zone:share-/.test(wz.id) && !holding() && fetchForMat(wz.id)) return true;
     if (/^zone:share-/.test(wz.id) && !holding()) shareCount(wz.id);
     // With a sack in the hands, a tap on a mat chooses it: it glows, and the hero walks to it (#177).
     else if (/^zone:share-/.test(wz.id)) return chooseMat(wz.id);
@@ -3146,6 +3147,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // Seconds that an enemy stops at each post: in the first two raids of a tool, and after a loss.
   const RAID_STOP = Object.freeze({ first: 4, lost: 6 });
   const AIM_HOLD_GRADE = 3; // the highest grade where the aimed enemy stands at every raid
+  const TRAP_WAIT_GRADE = 2; // the highest grade where a raid with a trap ask waits for the trap (#185)
   const AIM_HOLD_RAIDS = 4; // from grade 4, the raids of the slingshot where it stands too
   const raidEnt = () => getEntity(state, 'raid');
   const raidOn = () => Boolean(raidEnt());
@@ -3183,6 +3185,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       seed: hashSeed(`${state.seed}:${id}:${profile.flags['raid.used.sling'] ?? 0}`),
     };
     const raid = createRaid(data.raids, id, raidLevel(data.raids, profile.grade), lossLevel(profile), teach, easy);
+    // Up to grade 2 the soldiers wait for the trap at every raid with a trap ask, not only at the
+    // first raid of the traps (#185: a girl of grade 1 tapped post 2, and three soldiers were on her
+    // before she held a trap).
+    if (!raid.hold && raid.trapPost !== null && Number(profile.grade ?? 1) <= TRAP_WAIT_GRADE) raid.hold = { tool: 'traps' };
     raid.slingAfter = slingAfter;
     slingPull = null;
     trapPull = null;
@@ -3234,6 +3240,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       else lines.unshift(count);
     }
     raidHits = 0;
+    raidAllMisses = 0;
+    raidNoTool = false;
     raidTakes = 0;
     // A villager names the post for a trap (an ordinal word, no numeral), after the line of the traps.
     if (raid.trapPost !== null) {
@@ -3367,6 +3375,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   }
   // The hits of the child in this raid, and the enemies that came to the gate (#135).
   let raidHits = 0;
+  // The causes of a loss (#185: "I put the bẫy right, and I shot." and the line named the count):
+  // the misses of the raid, and a take while the trap of the ask was not in the hands or on the
+  // road.
+  let raidAllMisses = 0;
+  let raidNoTool = false;
   let raidTakes = 0;
   // The enemies that are left (#121): the coach says the last one, one time in a raid.
   let lastSaid = false;
@@ -3425,6 +3438,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (hitter) emit({ type: 'open', screen: 'callout', id: hitter.id, textKey: key, params: { ...raidWords(), n: { key: `num.${Math.min(10, ev.left)}` } } });
       return;
     }
+    // A miss of this raid: the line of a loss names the count only after a miss (#185).
+    raidAllMisses += 1;
     // Two stones in a row that were short and came from one press each: the elder shows the
     // quick presses (#93). After that, four more misses bring the help of Nghé.
     if (teach.shown) {
@@ -3673,12 +3688,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (burnt > 0) say('raid.lost.torch', { ...words, n: { key: `num.${burnt}` } });
       // A loss says what to try (#156, #157): what was missing of the trap, and the count of the
       // slingshot, before the line of the dawn.
+      // The line names only a true cause (#185): soldiers who came while the child had no trap, a
+      // trap at another post, or a count that missed. A right count gets no line of the count.
       if (r.raid.trapPost !== null && !r.raid.trapDone) {
         const n = r.raid.posts.findIndex((q) => q.d === r.raid.trapPost) + 1;
-        if (!r.raid.usedTools?.includes('traps')) say('raid.lost.notrap', words);
+        if (raidNoTool) say('raid.lost.notool', words);
+        else if (!r.raid.usedTools?.includes('traps')) say('raid.lost.notrap', words);
         else say('raid.lost.trappost', { ...words, post: { key: `num.${n}` } });
       }
-      else if (r.raid.tools.includes('sling')) say('raid.lost.count', words);
+      else if (r.raid.tools.includes('sling') && raidAllMisses > 0) say('raid.lost.count', words);
       say(def.lostKey ?? 'raid.lost');
     }
     emit({ type: 'hud' });
@@ -3694,6 +3712,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const who = coach && !coach.hidden ? coach : nghe && !nghe.hidden ? nghe : null;
     const key = data.raids?.raids[r?.id]?.takeKey ?? 'raid.take';
     raidTakes += 1;
+    const trapNow = getEntity(state, holding())?.item?.kind === 'trap';
+    if (r && r.trapPost !== null && !r.trapDone && !trapNow) raidNoTool = true;
     // An enemy that the child hit and that still took: it needed one more hit (#135).
     const foe = r?.enemies.find((e) => e.id === ev.id);
     const more = foe && foe.hits > 0 && foe.hits < foe.max;
@@ -3765,6 +3785,31 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (distHb(hp, p) > REACH) goTo({ x: wz.zone.x, z: wz.zone.z }, zoneId, null, standOf(wz));
     else chosen = { id: zoneId, along: null };
     return true;
+  }
+  // Fewer touches for each sack up to grade 1 (#185: ten sacks were about 30 touches at K, "so much
+  // walking"): with empty hands, a tap on a mat walks to the pile, takes a sack, and walks to that
+  // mat; then a press puts it. Two touches for each sack, still one sack at a time.
+  const SACK_GRADE = 1;
+  let matAfterPick = null; // { zone, t } the mat of a tap, until the sack is in the hands
+  function fetchForMat(zoneId) {
+    if (Number(profile.grade ?? 1) > SACK_GRADE || holding() || !zoneId) return false;
+    const share = trialZone('share');
+    if (!share || share.zone.done) return false;
+    const sack = (zoneOf('loot')?.zone.items ?? []).map((id) => getEntity(state, id)).find((e) => e && !e.item.held);
+    if (!sack) return false;
+    emit({ type: 'glowSeq', ids: [zoneId.replace(/^zone:/, 'mat:')] });
+    const p = middleOf(sack);
+    matAfterPick = { zone: zoneId, t: state.tick };
+    walkToThing({ x: p.x / 2, y: p.z / 2 }, () => worldCommand(state, { type: 'pick', id: 'hero', item: sack.id }));
+    return true;
+  }
+  function stepMatAfterPick() {
+    if (!matAfterPick) return;
+    if (holding()) {
+      const z = matAfterPick.zone;
+      matAfterPick = null;
+      chooseMat(z);
+    } else if ((state.tick - matAfterPick.t) * STEP > 12) matAfterPick = null;
   }
   // A put on a mat of the share: the owner of the mat says its count (#177: "No word after a put.").
   // "Chiếu của Gióng: hai bao."
@@ -5122,7 +5167,27 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // that a tap makes the target), at (half blocks), d, rank, run, hold, release, ghost }.
   // The work of a task that is out of reach (work: true) is in out.far: with no work in reach, a
   // press walks the hero there, and the act comes at the end of the walk (#54).
+  // One work at a time on the button (#185: after a put on a mat of the share, the button became
+  // the slingshot of the raid, and a girl of grade 2 started the raid again over the open share).
+  // While a work is open where the hero is, the button never offers the start of a raid, an event,
+  // or the work of another task.
+  const workName = (task) => String(task ?? '').replace(/^trial-/, '').replace(/^event:/, 'event-').replace(/-(gap|pile)$/, '');
   function candidates() {
+    const out = allCandidates();
+    const here = workHere();
+    if (!here || here === 'puzzle' || here === 'folk') return out;
+    const other = (c) => {
+      if (c.act === 'raid') return true;
+      // A talk with the person of an event stays: during another work it says to wait (#129).
+      if (String(c.target).startsWith('event:') && !WORKLESS.has(c.act) && workName(c.target) !== workName(here)) return true;
+      const task = WORKLESS.has(c.act) ? null : taskOfCandidate(c);
+      return Boolean(task) && workName(task) !== workName(here);
+    };
+    const kept = out.filter((c) => !other(c));
+    kept.far = (out.far ?? []).filter((c) => !other(c));
+    return kept;
+  }
+  function allCandidates() {
     const h = hero();
     const hp = h.position;
     const out = [];
@@ -6199,6 +6264,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return;
     }
     if (/^(mat|zone):share-/.test(String(tapped ?? target.zone ?? ''))) {
+      if (!holding() && fetchForMat(shareMatOf(tapped ?? target.zone))) return;
       if (!holding()) shareCount(tapped ?? target.zone);
       else if (chooseMat(shareMatOf(tapped ?? target.zone))) return;
     }
@@ -7143,6 +7209,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     stepGuessRow();
     stepLeaveTask();
     stepPending();
+    stepMatAfterPick();
     stepToolLines();
     stepSeeThrough();
     stepCoach();

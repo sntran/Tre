@@ -115,7 +115,7 @@ test('an enemy past the last post when the child taps the hand gets one stone of
   assert.ok(!evs.some((e) => e.type === 'take'), 'no take');
 });
 
-test('a lost raid of the slingshot says the count to try before the line of the dawn', async () => {
+test('a lost raid of the slingshot with no miss does not name the count (#185); the line of the dawn comes', async () => {
   const h = await inRaid('raid-river', 3);
   // The last enemy took at the ford, and the raid allows no take: the raid is lost.
   const r = h.raid();
@@ -129,8 +129,8 @@ test('a lost raid of the slingshot says the count to try before the line of the 
   const end = h.events.find((e) => e.type === 'end');
   assert.ok(end && !end.won, 'the raid is lost');
   const keys = h.said.map((l) => l.key);
-  const count = keys.indexOf('raid.lost.count');
-  assert.ok(count >= 0, keys.slice(-6).join(', '));
-  assert.ok(count < keys.indexOf('raid.river.lost'), 'before the line of the dawn');
+  // The child threw no stone: the count was not the cause of the loss.
+  assert.ok(!keys.includes('raid.lost.count'), keys.slice(-6).join(', '));
+  assert.ok(keys.includes('raid.river.lost'), keys.slice(-6).join(', '));
   assert.match(load('i18n/vi.json')['raid.lost.count'], /bấm nút lớn bấy nhiêu lần/);
 });

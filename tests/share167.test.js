@@ -105,7 +105,7 @@ test('two sacks more on one mat than on another: the line says to move one sack 
 test('each mat shows the face of its owner, and the sacks are bigger', () => {
   const src = readFileSync(new URL('../src/ui/village.js', import.meta.url), 'utf8');
   assert.match(src, /const who = \/\^mat:share-\(\\w\+\)\$\/\.exec/);
-  assert.match(src, /setFace\(el, who\);/);
+  assert.match(src, /setFace\(el, who, null, OWNER\);/);
   const fig = readFileSync(new URL('../src/world/figures.js', import.meta.url), 'utf8');
   assert.match(fig, /case 'sack': return still\(\[P\('sack', \[0\.95, 0\.8, 0\.8\]/);
 });

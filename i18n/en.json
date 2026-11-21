@@ -1200,6 +1200,7 @@
   "raid.lost.torch": "A torch fell inside the {wall} {n} times.",
   "raid.lost.count": "Next time, count the post where the {who} stands, and press the big button that many times.",
   "raid.posts.count": "Count the posts from where you stand: one, two, three, four.",
+  "raid.lost.notool": "{who} came while you had no trap in your hands.",
   "raid.lost.notrap": "There was no trap on the road.",
   "raid.lost.trappost": "The trap was not at post {post}.",
   "raid.trap.wrong": "This trap is at post {at}. Put the trap at post {post}.",

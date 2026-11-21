@@ -14,6 +14,7 @@ import { packHeap } from './work.js';
 import { FIGURES, HERO_HEIGHTS, ELEVATION, clearOf } from '../sight.js';
 
 const OVER = 4; // seconds: the things of the raid stay after the end (the enemies walk away, #124)
+const OVER_WON = 1.5; // seconds after a win (#185)
 const HORNS = 1.6; // seconds: Nghé lowers her horns when the hero is hurt
 const LANE = 2; // half blocks: a trap snaps to the middle of the road within this distance
 const AWAY = KEEP_SIDE + 6; // half blocks: the children of the court this near the road go home in a raid (#55)
@@ -36,7 +37,9 @@ export function raid(world, dt, rng, env) {
   if (raid.result) {
     r.over = (r.over ?? 0) + dt;
     walkAway(raid, dt);
-    if (r.over >= OVER) endRaid(world, friend);
+    // After a win, the share comes soon after the last line (#185: four seconds of nothing, and
+    // the child pressed an empty button).
+    if (r.over >= (raid.result === 'won' ? OVER_WON : OVER)) endRaid(world, friend);
     else mirror(world, raid, env);
     return;
   }
