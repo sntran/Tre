@@ -2260,7 +2260,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       runAct(a, id ?? btn?.id ?? null);
       return;
     }
-    if (!a?.hold || busy) return;
+    if (!a?.hold || busy) {
+      // A hold with no act of a hold (for the robot child, #183).
+      emit({ type: 'press', id: id ?? btn?.id ?? null, act: null, done: false, hold: true, why: busy ? 'busy' : a ? 'nohold' : 'gone' });
+      return;
+    }
     holdAct = a;
     // Only the count of the child plays while the knife is down (#176: the count of the show of the
     // woodcutter and the count of the rings of the child came at the same time).
@@ -5899,14 +5903,18 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         emit({ type: 'press', id: pid, act: null, done: false, again: true });
         return;
       }
-      // A dim button does nothing; a press on an act that is gone pulses.
+      // A dim button does nothing; a press on an act that is gone pulses. why: the reason (for the
+      // robot child, #183): settle (the picture is younger than SETTLE), gone (the act of the
+      // picture is not in reach now), or none (no act).
       if (button().a || id !== null) emit({ type: 'pulse', id: null });
-      emit({ type: 'press', id: pid, act: null, done: false });
+      const now = button();
+      const why = b && b !== now ? 'gone' : now.a ? 'settle' : 'none';
+      emit({ type: 'press', id: pid, act: null, done: false, why });
       mentoring.touched();
       return;
     }
     if ((state.tick - markTick) * STEP < MARK_AGAIN && tapTick < markTick) {
-      emit({ type: 'press', id: pid, act: null, done: false });
+      emit({ type: 'press', id: pid, act: null, done: false, why: 'mark' });
       return;
     }
     if (actTick === state.tick && !a.hold && !a.go) {
@@ -5971,7 +5979,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if ((state.tick - p.t) * STEP >= PRESS_WAIT) {
       pendingPress = null;
       emit({ type: 'pulse', id: null });
-      emit({ type: 'press', id: p.id, act: null, done: false });
+      emit({ type: 'press', id: p.id, act: null, done: false, why: 'walk' });
       mentoring.touched();
     }
   }
@@ -7490,7 +7498,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const a = b.show ?? b.a;
       if (!a) return null;
       const zone = getEntity(state, a.target)?.zone;
-      return { id: b.id, act: a.act, icon: a.icon, target: a.target, hold: Boolean(a.hold), ghost: a.ghost ?? null, spot: zone && zone.rule !== 'span' ? spotOf(zone) : null, walk: b.deferred || Boolean(b.a?.go) };
+      // task: the work of the act (for the robot child, tools/robot: the button offers only the
+      // work that is open, #183).
+      return { id: b.id, act: a.act, icon: a.icon, target: a.target, hold: Boolean(a.hold), ghost: a.ghost ?? null, spot: zone && zone.rule !== 'span' ? spotOf(zone) : null, walk: b.deferred || Boolean(b.a?.go), task: taskOfCandidate(a) };
     },
     // The place of a task under a map point (cells), or null: a tap there chooses the place.
     placeAt: (x, y) => workZoneAt(x * 2, y * 2)?.id ?? null,

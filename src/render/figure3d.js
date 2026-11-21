@@ -8,7 +8,7 @@
 // move with the walk of the figure and the wind of the world (src/world/sway.js).
 import * as THREE from 'three';
 import { colorIndex, toneRgb, FACE_TONES } from '../world/voxel.js';
-import { figureOf } from '../world/figures.js';
+import { figureOf, drawable } from '../world/figures.js';
 import { createAnimator, animate } from '../world/animate.js';
 import { trackCarries, flightAt } from '../world/carry.js';
 import { detailFor, inView, lodFor } from '../world/lod.js';
@@ -354,7 +354,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
       const flying = flights.map((fl) => ({ id: `flight:${fl.start}:${fl.by}:${fl.hide ?? ''}`, look: fl.look, position: flightAt(fl, tick) })).filter((x) => x.position);
       const ghostEnt = ghost ? { id: 'ghost', ghost: true, bright: Boolean(ghost.bright), see: Boolean(ghost.see), look: ghost.look, position: { x: ghost.x, y: ghost.y, z: ghost.z, facing: ghost.facing ?? 0 } } : null;
       for (const e of [...world.entities, ...flying, ...(ghostEnt ? [ghostEnt] : [])]) {
-        if (!e.position || !e.look || e.hidden) continue;
+        if (!drawable(e)) continue;
         if (until(flights, 'hide', e.id) > tick) continue;
         seen.add(e.id);
         const p = e.position;

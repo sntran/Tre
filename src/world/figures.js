@@ -15,6 +15,12 @@ import { personFine, ngheFine, buffaloFine, dogFine, chickenFine, duckFine, fish
 
 export { PLANK_TONES };
 
+// Does the view draw an entity as a figure (src/render/figure3d.js)? The robot child uses the same
+// rule with no DOM (#183: a thing of a puzzle that the view does not draw).
+export function drawable(e) {
+  return Boolean(e?.position && e.look && !e.hidden);
+}
+
 // The look of the hero from the hero of the profile. options: the choices of hero creation
 // (hero in data/figures.json); the profile keeps the number of each choice (1 is the first).
 // The colors of a small mat: [the mat, its edges] (#107: the desks of the share).
