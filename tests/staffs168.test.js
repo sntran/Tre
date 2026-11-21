@@ -94,9 +94,9 @@ test('a break says where to let go: at the rings of the sample', async () => {
 test('the show of the woodcutter counts up to the rings of the sample', async () => {
   const h = await atClump(1);
   h.session.command({ type: 'tap', target: { thing: 'culm:staffs:0' } });
-  h.run(40, () => h.said.some((l) => l.key === 'mentor.staffs.show'));
+  h.run(40, () => h.said.some((l) => l.key === 'staffs.turn'));
   const keys = h.said.map((l) => l.key);
-  const show = keys.indexOf('mentor.staffs.show');
+  const show = keys.indexOf('staffs.turn');
   const first = keys.indexOf('mentor.staffs.first');
   const counted = keys.slice(first, show).filter((k) => /^num\./.test(k));
   const n = getEntity(h.session.state, 'sample:staffs')?.item.size;

@@ -2247,7 +2247,10 @@ export async function mountVillage(ctx, params = {}) {
     // (#99: "Đi tới chỗ ngôi sao." came, and the hero did not move).
     const raidNow = Boolean(getEntity(state, 'raid')?.raid && !getEntity(state, 'raid').raid.result);
     const onEdge = [];
-    for (const m of (busy && !marksLine && !facePulse) || taskHereNow || raidNow ? [] : markers()) {
+    // A work that leads the child to its place (the clump of the staffs) keeps the star of that place.
+    const lead = taskHereNow && session.workLead?.();
+    const list = (busy && !marksLine && !facePulse) || raidNow ? [] : lead ? markers().filter((m) => m.work) : taskHereNow ? [] : markers();
+    for (const m of list) {
       const p = view.project(m.x, m.h, m.y);
       const edge = edgeMarker(screen, p, inset);
       if (edge) {

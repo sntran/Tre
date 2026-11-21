@@ -30,7 +30,7 @@ for (const night of [false, true]) {
   CASES.push({ name: 'forge-horse', kind: 'presser', night, grade: 3 });
   CASES.push({ name: 'puzzle-ferry', kind: 'star', night, todo: '#190: the loop of the riddle, the fisher at night' });
   CASES.push({ name: 'healer-grade4', kind: 'walker', night });
-  CASES.push({ name: 'staffs-grade1', kind: 'walker', night, todo: night ? null : '#187: the line of the hold' });
+  CASES.push({ name: 'staffs-grade1', kind: 'walker', night });
 }
 
 for (const c of CASES) {

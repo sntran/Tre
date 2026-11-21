@@ -1389,6 +1389,10 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     s.say(t, 'mentor.staffs.first');
     s.point(t, p, 1.6);
     s.steps.push({ at: t, spawn: { look, x: p.x, z: p.z, facing: 0 } });
+    // The show in view (#187: the elder stood in front of the woodcutter): the view frames the
+    // woodcutter, his culm, and the sample, and the people there step aside.
+    const who = getEntity(world(), 'npc:woodcutter');
+    s.steps.push({ at: t, view: { key: 'trial-staffs', points: [{ x: p.x, y: c.y, z: p.z }, ...(who?.position ? [{ ...who.position }] : []), ...(sample?.position ? [{ ...sample.position }] : [])] } });
     let k = 1;
     t += 1.6;
     for (let r = 1; r <= at; r++) {
@@ -1404,12 +1408,15 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     s.steps.push({ at: t, look: { k: 0, look: `stump-${at}` } });
     s.steps.push({ at: t, sound: { id: 'zone:trial-staffs', sound: 'plank-up' } });
     t += 0.8;
-    s.say(t, 'mentor.staffs.show');
-    t += 3.6;
     if (first) {
       s.say(t, 'mentor.first.you');
       t += 1.5;
     }
+    // The goal before the first try (#187: "How many dot do I count? Nobody told me a number."): the
+    // sample glows, and its count and where to let go come last, so that the knife is on the button
+    // from the first word of the line that names the button (the show ends there).
+    if (sample) s.steps.push({ at: t, seq: { ids: [sample.id] } });
+    s.say(t, 'staffs.turn', { n: { key: `num.${at}` } });
     return t;
   }
   // The rings of the sample staff, one by one: a chalk ring on each, counted aloud, and then the
@@ -1438,9 +1445,12 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     const p = { x: c.x, z: c.z - i * 2.5 };
     s.point(t, p, 1.6);
     s.mark(t, p, 2.5);
-    s.say(t + 0.1, n === 1 ? 'staffs.piece.one' : 'staffs.piece', { n: { key: `num.${Math.min(150, n)}` } });
-    // Then where to let go (#168: a break said the rings, and not what to do next).
+    // The line names the piece that broke, and why (#187: "Khúc này có sáu đốt." came just after
+    // the child heard "một, hai, ba, bốn" on another culm).
     const sample = getEntity(world(), 'sample:staffs');
+    const longer = !sample || n > sample.item.size;
+    s.say(t + 0.1, longer ? 'staffs.broke.long' : 'staffs.broke.short', { n: { key: `num.${Math.min(150, n)}` } });
+    // Then where to let go (#168: a break said the rings, and not what to do next).
     const end = sampleSteps(task, s, t + 2.4);
     if (sample) s.say(end, 'staffs.letgo', { n: { key: `num.${sample.item.size}` } });
     return sample ? end + 3 : end;

@@ -95,7 +95,7 @@ test('the frame of the raid of the river has the fisher at the wall, who shows t
 test('in a raid no star shows on the screen: each star leads away from the wall', () => {
   const src = readFileSync(new URL('../src/ui/village.js', import.meta.url), 'utf8');
   assert.match(src, /const raidNow = [^\n]*raid[^\n]*result/);
-  assert.match(src, /\|\| taskHereNow \|\| raidNow \? \[\] : markers\(\)/);
+  assert.match(src, /\|\| raidNow \? \[\] : lead \? markers\(\)\.filter\(\(m\) => m\.work\) : taskHereNow \? \[\] : markers\(\)/);
   assert.match(src, /waveBtn\.hidden = busy \|\| !session\.canWave/);
 });
 

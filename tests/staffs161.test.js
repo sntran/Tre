@@ -55,15 +55,15 @@ async function atClump(grade = 1, flags = {}) {
   return { session, said, events, run, tz, hold, ready };
 }
 
-test('at the start, the woodcutter cuts a culm of his own with a hold: the mark goes up ring by ring while he counts, and then he says to hold the button', async () => {
+test('at the start, the woodcutter cuts a culm of his own with a hold: the mark goes up ring by ring while he counts, and then he says the rings of the sample and to hold the button (#187)', async () => {
   const h = await atClump(1);
   h.session.command({ type: 'tap', target: { thing: 'culm:staffs:0' } });
-  h.run(40, () => h.said.some((l) => l.key === 'mentor.staffs.show'));
+  h.run(40, () => h.said.some((l) => l.key === 'staffs.turn'));
   const keys = h.said.map((l) => l.key);
-  const show = keys.indexOf('mentor.staffs.show');
+  const show = keys.indexOf('staffs.turn');
   assert.ok(show >= 0, keys.join(', '));
   assert.ok(['num.1', 'num.2', 'num.3'].every((k) => keys.slice(0, show).includes(k)), 'he counts the rings');
-  assert.equal(vi['mentor.staffs.show'], 'Em giữ nút lớn, vạch đi lên từng đốt. Buông tay là chặt.');
+  assert.equal(vi['staffs.turn'], 'Gậy mẫu có {n} đốt. Em giữ nút lớn, vạch tới đốt {n} thì buông tay.');
   h.run(6);
   // His culm and his piece go at the end of the show; the culms of the child all stand.
   assert.ok(!h.session.state.entities.some((e) => e.demo), 'the culm of the show is gone');
@@ -93,7 +93,7 @@ test('two cuts at the first ring break, and the woodcutter says the rings of the
   assert.ok(snap, 'the pieces break');
   assert.deepEqual(snap.pieces, [1, 1]);
   const keys = h.said.slice(from).map((l) => l.key);
-  const piece = h.said.slice(from).find((l) => /^staffs\.piece/.test(l.key));
+  const piece = h.said.slice(from).find((l) => /^staffs\.(piece|broke)/.test(l.key));
   const sample = h.said.slice(from).find((l) => l.key === 'staffs.sample');
   assert.ok(piece && sample, keys.join(', '));
   assert.equal(sample.params.n.key, `num.${h.tz().pieces.length === 2 ? 4 : 0}`);

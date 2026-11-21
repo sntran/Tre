@@ -804,3 +804,12 @@ In the short plays after #182, presses were lost in four places, with no sound a
 - **A soldier waits at a post at most 4 s**, also after a loss (`RAID_STOP`).
 - **A slow count adds up.** Up to grade 2 the stone flies 3.5 s after the last press (`FIRE_WAIT`), so that a child who says each number aloud and waits 3 s between presses still gets the count. The stone lands at most 1.5 s after the throw, and the hero stays while it flies.
 - **Tests:** `tests/raid186.test.js`; the robot slow child at the raid of the soldiers.
+
+## The bamboo staffs: follow, watch, and know the number (#187)
+
+- **Follow the woodcutter.** The talk ends with "Em theo anh ra bụi tre nhé.", and no line of the talk names the button. The knife is on the button only near the clump (`CLUMP_NEAR`, 16 half blocks): at the house of the woodcutter a press does not walk to the clump; the child follows his star.
+- **The show in view.** The show frames the woodcutter, his culm, and the sample (a view step of the script), so that the people there step aside.
+- **The number before the first try.** After the show: "Giờ đến lượt em.", the sample glows, and "Gậy mẫu có bốn đốt. Em giữ nút lớn, vạch tới đốt bốn thì buông tay." (`staffs.turn`). The show ends at the first word of that line, so the knife is on the button then.
+- **A word after each cut,** at once: "Bốn đốt, bằng gậy mẫu!" or "Khúc này có sáu đốt. Gậy mẫu có bốn đốt: khúc này dài hơn." (`staffs.cut.*`).
+- **The break names its piece:** "Khúc trước có sáu đốt, dài hơn gậy mẫu, nên gãy." (`staffs.broke.*`), and the culm that grows again: "Cây tre mọc lại, em chặt lại nhé."
+- **Tests:** `tests/staffs187.test.js`; the robot walker at `staffs-grade1` with no `lineBeforeAct`.

@@ -5032,6 +5032,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   const WORKLESS = new Set(['talk', 'look', 'ride', 'sleep']);
   // Half blocks: a press walks the hero to the work of the task this far away at most (#54).
   const FAR_WORK = 80;
+  const CLUMP_NEAR = 16; // half blocks: the knife of the staffs is on the button this near to the clump (#187)
   // The press walks the hero to a work of the task out of reach, and does its act at the end of
   // the walk (as after a tap on the place).
   function goWork(c) {
@@ -5375,7 +5376,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // While the woodcutter shows the first cut, the knife waits (#176: one voice at a time): a
       // press from afar still walks to the clump, to see the show.
       const staffs = open('staffs');
-      if (staffs && !staffs.zone.cut) {
+      // The knife is on the button only at the clump (#187: the knife was on the button at the house
+      // of the woodcutter, and then it went away): the child follows the woodcutter by his star.
+      const atClump = staffs?.zone.clump && distHb(hp, staffs.zone.clump) <= CLUMP_NEAR;
+      if (staffs && !staffs.zone.cut && atClump) {
         const showing = mentoring.showing('trial-staffs');
         for (const e of query(state, 'item', 'position')) {
           if (e.item.kind !== 'culm' || e.hidden) continue;
@@ -6943,6 +6947,22 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const address = ref ? data.npcs?.npcs?.[ref]?.address : null;
     return address && data.mentors?.addressLines?.[address]?.includes(key) ? `${key}.${address}` : key;
   }
+  // A word after each cut of the staffs, at once (#187: "Nobody said good job… Did I do it right?"),
+  // and a line when a culm grows again.
+  function staffWord(ev) {
+    const who = getEntity(state, 'npc:woodcutter');
+    const sample = getEntity(state, 'sample:staffs');
+    if (!who || who.hidden) return;
+    if (ev.type === 'stem') {
+      emit({ type: 'open', screen: 'callout', id: who.id, textKey: 'staffs.regrow', params: {} });
+      return;
+    }
+    if (!sample || !Number.isFinite(ev.at)) return;
+    const n = ev.at;
+    const k = sample.item.size;
+    const key = n === k ? 'staffs.cut.right' : n > k ? 'staffs.cut.long' : 'staffs.cut.short';
+    emit({ type: 'open', screen: 'callout', id: who.id, textKey: key, params: { n: { key: `num.${Math.min(150, n)}` }, k: { key: `num.${k}` } }, happened: true });
+  }
   const yourTurn = new Set(); // the tasks where "Giờ đến lượt cháu." came
   function worldEvent(ev) {
     // Over the river: the far walk has no ferry to keep any more.
@@ -6984,6 +7004,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (ev.type === 'glowThings') glowing = [...ev.ids];
     if (ev.type === 'stuck') bridgeStuck(ev);
     if (ev.type === 'snap' || ev.type === 'stem') woodCut(ev);
+    if (ev.id === 'zone:trial-staffs' && (ev.type === 'slash' || ev.type === 'stem')) staffWord(ev);
     if (ev.type === 'empty') emptyPile(ev);
     if (ev.type === 'more' && ev.task) log('stakes', { task: ev.task.replace(/^zone:/, ''), help: 'stakes', stakes: ev.n });
     if ((ev.type === 'pick' && ev.id === 'hero') || ev.type === 'solid') glowing = [];
@@ -7614,6 +7635,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The open task whose place the hero is at (#76), or 'puzzle' while a puzzle goes on near the
     // hero (#110).
     taskHere: () => workHere(),
+    // The work leads the child to its place: after the talk of the staffs, the star of the clump
+    // shows until the hero is at the clump (#187: "He said he would show me chop, but no chop.").
+    workLead: () => {
+      const tz = trialZone('staffs');
+      const h = hero()?.position;
+      return Boolean(tz && !tz.zone.done && tz.zone.clump && h && distHb(h, tz.zone.clump) > CLUMP_NEAR);
+    },
     inTask: () => Boolean(mentoring.activeKey() || folk.active() || query(state, 'zone').some((z) => z.zone.rule === 'trial' && !z.zone.done)),
     // Is a map point (cells) on the gap of an open bridge (a tap there is work, not a pet of Nghé)?
     openSpanAt: (x, y) => bridgeOpen() && Boolean(spanAt(Math.floor(x), Math.floor(y))),

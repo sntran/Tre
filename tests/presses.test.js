@@ -159,7 +159,7 @@ test('the teacher: presses carry rods to the mat; after ten, one tap on the teac
   assert.ok(tied.some((e) => e.solved), JSON.stringify(tied));
 });
 
-test('the staffs: presses walk to the clump; quick taps do not cut, and the woodcutter says to hold (#161); holds of one step cut short staffs, which break', async () => {
+test('the staffs: a tap walks to the clump; quick taps do not cut, and the woodcutter says to hold (#161); holds of one step cut short staffs, which break', async () => {
   const session = await afterTalk('staffs-bamboo');
   const slashes = [];
   const said = [];
@@ -167,9 +167,9 @@ test('the staffs: presses walk to the clump; quick taps do not cut, and the wood
     if (ev.type === 'slash' || ev.type === 'skill') slashes.push(ev);
     if (ev.type === 'open' && ev.textKey) said.push(ev.textKey);
   });
-  // A press walks to the clump, and the knife waits for the end of the first show of the
-  // woodcutter (#176).
-  session.command({ type: 'hands' });
+  // A tap on a culm walks to the clump (the knife is on the button only there, #187), and the knife
+  // waits for the end of the first show of the woodcutter (#176).
+  session.command({ type: 'tap', target: { thing: 'culm:staffs:0' } });
   for (let i = 0; i < 60 / STEP && !session.action()?.hold; i++) {
     if (session.screen) session.command({ type: session.screen === 'dialogue' || session.screen === 'say' ? 'next' : 'close' });
     session.step();
