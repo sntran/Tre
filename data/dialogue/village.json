@@ -433,8 +433,41 @@
     },
     {
       "id": "woodcutter.staffs",
-      "start": "n1",
+      "start": "g",
       "nodes": {
+        "g": {
+          "if": {
+            "grade": {
+              "max": 2
+            }
+          },
+          "then": "k1",
+          "else": "n1"
+        },
+        "k1": {
+          "speaker": "woodcutter",
+          "textKey": "dlg.woodcutter.staffs.k1",
+          "mood": "worried",
+          "next": "k2"
+        },
+        "k2": {
+          "speaker": "woodcutter",
+          "textKey": "dlg.woodcutter.staffs.k2",
+          "next": "k3"
+        },
+        "k3": {
+          "speaker": "woodcutter",
+          "textKey": "dlg.woodcutter.staffs.k3",
+          "effects": [
+            {
+              "set": "staffs.told"
+            },
+            {
+              "open": "trial",
+              "id": "staffs"
+            }
+          ]
+        },
         "n1": {
           "speaker": "woodcutter",
           "textKey": "dlg.woodcutter.staffs.n1",
