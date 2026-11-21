@@ -194,7 +194,8 @@ test('at the first card of con trâu, a person near says that Nghé is a young b
   // A buffalo of the fields (the big buffaloes graze in Xóm Ruộng), next to the hero.
   const { addEntity } = await import('../src/core/world/state.js');
   const buffalo = addEntity(session.state, { id: 'life:buffalo:test', kind: 'buffalo', position: { x: hero.position.x + 2, y: hero.position.y, z: hero.position.z + 2, facing: 0 }, look: 'buffalo' });
-  for (let i = 0; i < 60; i++) {
+  // The cards come one at a time, 3 s apart (#175): the dog and the place come first.
+  for (let i = 0; i < 400; i++) {
     Object.assign(buffalo.position, { x: hero.position.x + 2, z: hero.position.z + 2 });
     delete buffalo.route;
     session.step();

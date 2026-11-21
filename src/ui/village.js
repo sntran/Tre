@@ -1617,7 +1617,11 @@ export async function mountVillage(ctx, params = {}) {
     if (speaking() || spoken || voiceQueue.size()) voiceAt = performance.now();
     if (printCard || printWait || !printQueue.length || box || busy || modal) return;
     if (performance.now() - Math.max(printGone, voiceAt) < PRINT_GAP || query(state, 'script').length) return;
-    showPrint(printQueue.shift());
+    // A card of an animal that is not on the screen goes (#175: "Tranh mới: Con vịt" with no duck
+    // in view); its print stays in the notebook.
+    const ev = printQueue.shift();
+    if (ev.from && figures.placeOf(ev.from) && !onScreen(ev.from)) return;
+    showPrint(ev);
   }
   // Is a figure on the screen now (its head, inside the canvas)?
   function onScreen(id) {

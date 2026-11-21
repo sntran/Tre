@@ -979,15 +979,45 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       addEntity(state, { id: ring, noteRing: { until: state.tick + NOTE_RING / STEP }, position: { ...animal.position }, look: 'mentor-mark' });
     }
     for (const e of entriesOfKey(data.notebook, key)) {
-      emit({ type: 'notebook', id: e.id, titleKey: e.titleKey, look: e.look ?? null, kind: e.kind, ...(from ? { from } : {}) });
-      if (e.say) {
-        const hp = hero()?.position;
-        const who = hp ? persons().filter((p) => p.kind === 'npc' && !getEntity(state, p.entity)?.hidden).map((p) => getEntity(state, p.entity)).filter((x) => x?.position && Math.hypot(x.position.x - hp.x, x.position.z - hp.z) <= NOTE_SAY).sort((a, b) => Math.hypot(a.position.x - hp.x, a.position.z - hp.z) - Math.hypot(b.position.x - hp.x, b.position.z - hp.z))[0] : null;
-        if (who) emit({ type: 'open', screen: 'callout', id: who.id, textKey: e.say, params: {} });
-      }
+      cards.push({ ev: { type: 'notebook', id: e.id, titleKey: e.titleKey, look: e.look ?? null, kind: e.kind, ...(from ? { from } : {}) }, say: e.say ?? null });
     }
   }
   const NOTE_SAY = 30; // half blocks: the person who says the line of a print
+  // The cards of the notebook wait for a calm moment (#175: the first card came in the middle of
+  // the count of a trap, the press during the card was lost, and the trap went to post 1). A card
+  // waits while the child counts (the pull of a trap or of the slingshot), holds the button, reads a
+  // screen, or plays a raid. The first card of all waits also for a moment with no task and no talk.
+  // The cards come one at a time, CARD_GAP seconds apart. A card of an animal that is no longer in
+  // view goes (its print stays in the notebook): the voice says only what the screen shows (#170).
+  const cards = [];
+  const CARD_GAP = 3; // seconds from one card to the next
+  const CARD_VIEW = 40; // half blocks: an animal farther from the hero than this is not in view
+  let cardAt = -Infinity; // the tick of the last card
+  let firstCard = false; // the first card of the notebook came in this visit
+  const counting = () => Boolean(trapPull || slingPull || dragPull > 0 || holdAct);
+  function cardsWait() {
+    if (counting() || screen || busy || raidOn()) return true;
+    if (query(state, 'script').some((x) => x.script?.waitChild === false)) return true;
+    if (!profile.notebook?.told && !firstCard) return Boolean(comeTalk || workKey() || personTaskHere());
+    return false;
+  }
+  function stepCards() {
+    if (!cards.length || state.tick - cardAt < CARD_GAP / STEP || cardsWait()) return;
+    const hp = hero()?.position;
+    while (cards.length) {
+      const c = cards.shift();
+      const animal = c.ev.from ? getEntity(state, c.ev.from) : null;
+      if (c.ev.from && (!animal?.position || animal.hidden || !hp || Math.hypot(animal.position.x - hp.x, animal.position.z - hp.z) > CARD_VIEW)) continue;
+      cardAt = state.tick;
+      firstCard = true;
+      emit(c.ev);
+      if (c.say) {
+        const who = hp ? persons().filter((p) => p.kind === 'npc' && !getEntity(state, p.entity)?.hidden).map((p) => getEntity(state, p.entity)).filter((x) => x?.position && Math.hypot(x.position.x - hp.x, x.position.z - hp.z) <= NOTE_SAY).sort((a, b) => Math.hypot(a.position.x - hp.x, a.position.z - hp.z) - Math.hypot(b.position.x - hp.x, b.position.z - hp.z))[0] : null;
+        if (who) emit({ type: 'open', screen: 'callout', id: who.id, textKey: c.say, params: {} });
+      }
+      return;
+    }
+  }
   const NOTE_RING = 4; // seconds: the ring under an animal of a new picture
   const NOTE_NEAR = 20; // half blocks: an animal this near the hero is met
   // An animal is met only while it is on the screen (#113: "Tranh mới: Con cú" came, and no owl was
@@ -3775,6 +3805,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       trapPull = null;
       return;
     }
+    // The count waits while a screen is up (#175): it goes on after the screen.
+    if (screen || busy) return;
     trapPull.t += STEP;
     if (trapPull.t < FIRE_WAIT) return;
     const q = postPoint(r, trapPull.posts);
@@ -4014,7 +4046,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The posts up to the pull light up, and a ring lies on the road at the count.
     if (r) r.pull = raidTeach.demo ? raidTeach.demo.posts * POST_STEP : slingPull ? pullCount() : dragPull;
     if (r) aimAt(r);
-    if (!slingPull) return;
+    if (!slingPull || screen || busy) return;
     slingPull.t += STEP;
     if (slingPull.t >= FIRE_WAIT) fireSling();
   }
@@ -6504,7 +6536,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         profile.notebook.from ??= {};
         profile.notebook.from[skill.id] ??= from;
         const print = skillPrint(data.notebook, skill, profile.notebook.from[skill.id], profile.notebook.from);
-        emit({ type: 'notebook', id: print.id, titleKey: print.titleKey, look: print.look, kind: 'skill', subject: skill.subject });
+        cards.push({ ev: { type: 'notebook', id: print.id, titleKey: print.titleKey, look: print.look, kind: 'skill', subject: skill.subject }, say: null });
       }
     }
     const pAfter = l?.entry(ev.skill).p ?? null;
@@ -6798,6 +6830,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (state.tick % 3 === 0 && !screen) button();
     stepSling();
     stepTrap();
+    stepCards();
     stepRaidDemo();
     stepFarewell();
     stepGrow();

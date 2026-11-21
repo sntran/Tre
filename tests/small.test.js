@@ -64,7 +64,12 @@ test('the first cut of the woodcutter sends the card of a print with the name th
     { until: { event: 'mark', timeout: 10 } },
     { press: { entity: 'npc:woodcutter' } },
     { until: { event: 'notebook', timeout: 20 } },
-  ] }, { onSession: (s) => s.listen((ev) => { if (ev.type === 'notebook') cards.push(ev); }) });
+  ] }, { onSession: (s) => {
+    // The child saw the first card before: the first card of all waits for a moment with no task (#175).
+    s.profile.notebook ??= { seen: {} };
+    s.profile.notebook.told = true;
+    s.listen((ev) => { if (ev.type === 'notebook') cards.push(ev); });
+  } });
   assert.deepEqual(failures.map((f) => `step ${f.step}: ${f.message}`), []);
   const card = cards.find((c) => c.kind === 'skill');
   assert.ok(card, cards.map((c) => c.id).join(' '));

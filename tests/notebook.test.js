@@ -1,5 +1,6 @@
 // The notebook (Sổ tay, #8): the fill rules of the prints (src/core/notebook.js, data/notebook.json).
 import { test } from 'node:test';
+import { STEP } from './restless.js';
 import assert from 'node:assert/strict';
 import { notebookOf, noteSeen, isMet, notebookCount, entriesOfKey, notebookSkills, printArt, sentSkills } from '../src/core/notebook.js';
 import { existsSync } from 'node:fs';
@@ -85,6 +86,12 @@ test('in play, the notebook fills in: the talk of the fisher, the animals at the
   const prints = [];
   const failures = await runHeadless(story, { onSession: (s) => { session = s; s.listen((ev) => { if (ev.type === 'notebook') prints.push(ev.id); }); } });
   assert.deepEqual(failures, []);
+  // The cards come one at a time, at a calm moment (#175): the hero waits by the river.
+  for (let i = 0; i < 60 / STEP; i++) {
+    if (session.screen) session.command({ type: session.screen === 'dialogue' || session.screen === 'say' ? 'next' : 'close' });
+    session.step();
+    session.events();
+  }
   const seen = session.profile.notebook.seen;
   assert.ok('talk:fisher.trial' in seen);
   assert.ok('map:phu-dong' in seen);
