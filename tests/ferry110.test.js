@@ -89,23 +89,23 @@ test('a wave near the traveler before the puzzle gives no hint; the first wave a
   }
 });
 
-test('next to a thing, the button takes it with no tap; an empty boat does not cross from the full bank', async () => {
+test('next to a thing, the button takes it with no tap; from the full bank the press takes a thing, never an empty crossing', async () => {
   const p = await at([3, 62]);
   p.run(10);
   p.standAt('pz:dog');
   const a = p.session.action();
   assert.equal(a?.act, 'take');
   assert.equal(a.target, 'pz:dog');
-  // At the landing with empty hands and all three things on the bank: no crossing.
+  // At the landing with empty hands and all three things on the bank: no crossing; the press takes
+  // the nearest thing (#174: a press there only said "Thuyền chưa chở gì." again and again).
   const h = getEntity(p.session.state, 'hero');
   Object.assign(h.position, { x: p.boat().landA.x, z: p.boat().landA.z - 1 });
   delete h.route;
   p.run(1.5);
-  assert.equal(p.press(), 'cross');
+  assert.equal(p.press(), 'take');
   p.run(3);
   assert.equal(p.boat().side, 'a');
   assert.equal(p.boat().state, 'wait');
-  assert.ok(p.said.includes('puzzle.ferry.empty'), p.said.join(', '));
 });
 
 test('after a crossing, the view frames the things of both banks, and the traveler says the next move (#182)', async () => {

@@ -260,6 +260,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     busy: () => busy || Boolean(screen) || taskOn() || raidOn() || folk.active(),
     chosen: () => chosen?.id ?? null,
     unchoose: (id) => { if (chosen?.id === id) chosen = null; },
+    glow: (ids) => setCue(ids),
     say: (id, textKey, params) => emit({ type: 'open', screen: 'callout', id, textKey, params }),
     sound: (name) => emit({ sound: name, type: 'sound' }),
     look: (points, turn = true) => emit({ type: 'workView', key: 'puzzle', points, sight: points, ...(turn ? {} : { turn: false }) }),

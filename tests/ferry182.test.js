@@ -119,3 +119,15 @@ test('during the riddle, the eye at the river says a line of the ferry, never to
   assert.ok(/WADE_KEYS = \/river/.test(src));
   assert.ok(!/lội|cạn/.test(vi['puzzle.ferry.look']));
 });
+
+test('a riddle that did not start follows the grade of now', async () => {
+  const p = await at([3, 62], 2);
+  p.run(2);
+  p.session.profile.grade = 0;
+  p.session.command({ type: 'tap', target: { person: 'pz:traveler' } });
+  p.run(3);
+  p.session.command({ type: 'hands', id: p.session.action()?.id });
+  p.run(14);
+  assert.ok(p.said.includes('puzzle.ferry.easy.2'), p.said.join(', '));
+  assert.deepEqual(p.ferry().where, { dog: 'a', rice: 'a' });
+});
