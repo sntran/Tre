@@ -19,6 +19,7 @@ import { STEP } from '../../src/core/story.js';
 import { getEntity, query } from '../../src/core/world/state.js';
 import { createI18n } from '../../src/core/i18n.js';
 import { storyStars } from '../../src/core/stars.js';
+import { sideMarks } from '../../src/world/marks.js';
 import { along, postAt } from '../../src/core/world/raids.js';
 import { createRng } from '../../src/core/rng.js';
 import { readdirSync, readFileSync } from 'node:fs';
@@ -148,17 +149,27 @@ export async function playScene(story, { kind = 'star', night = false, commands 
     } catch {
       list = [];
     }
-    if (!list.length) return false;
+    // The star of a riddle near the hero is a star too, and a tap on it is a tap on its person, as
+    // in the view (src/world/marks.js). An open riddle near the hero comes first, as a work.
+    const side = sideMarks(st().entities);
     const h = hero().position;
+    const nearSide = side.filter((m) => Math.hypot(m.x * 2 - h.x, m.y * 2 - h.z) <= 40);
+    // During a riddle that the child heard, the child works on it: no star (a tap on its star says
+    // the riddle again).
+    if (session.puzzleHere?.()) return false;
+    list = [...list, ...nearSide];
+    if (!list.length) return false;
     const work = list.find((m) => m.work);
     const m = work ?? list.reduce((a, b) => (Math.hypot(b.x * 2 - h.x, b.y * 2 - h.z) < Math.hypot(a.x * 2 - h.x, a.y * 2 - h.z) ? b : a));
     tappedAt = command;
-    session.command({ type: 'tap', target: { ground: { x: m.x, y: m.y, h: m.h ?? 3, thing: false, object: null, goal: true } } });
+    if (m.side && m.person) session.command({ type: 'tap', target: { person: m.person } });
+    else session.command({ type: 'tap', target: { ground: { x: m.x, y: m.y, h: m.h ?? 3, thing: false, object: null, goal: true } } });
     return true;
   };
   const tapPerson = () => {
     const h = hero().position;
-    const near = session.persons().filter((p) => Math.hypot(p.x * 2 - h.x, p.y * 2 - h.z) <= 20 && !getEntity(st(), p.entity)?.hidden);
+    // During a riddle the child does not ask its person again and again.
+    const near = session.persons().filter((p) => Math.hypot(p.x * 2 - h.x, p.y * 2 - h.z) <= 20 && !getEntity(st(), p.entity)?.hidden && !(session.puzzleHere?.() && p.kind === 'puzzle'));
     if (!near.length) return false;
     tappedAt = command;
     session.command({ type: 'tap', target: { person: near[Math.floor(random() * near.length)].entity } });

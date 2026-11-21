@@ -97,7 +97,7 @@ async function at(cell, grade, flags = {}) {
 
 test('the ferry: a wrong pair shows its scene and all come back; seven crossings bring all three over, and the traveler gives a gift', async () => {
   assert.ok(puzzleDay(data.ferry, 1040020559, DAY));
-  const p = await at(FERRY, 1);
+  const p = await at(FERRY, 2);
   assert.ok(p.said.includes('puzzle.ferry.start.1'));
   const ferry = () => p.session.puzzles.state().ferry;
   const cross = (thing) => {
@@ -111,7 +111,9 @@ test('the ferry: a wrong pair shows its scene and all come back; seven crossings
   // The dog first: the chicken pecks at the rice, and the boat brings the dog back.
   cross('dog');
   assert.ok(p.said.includes('puzzle.ferry.peck'));
-  p.run(SCENE_END, () => getEntity(p.session.state, 'ferry:pz').ferry.side === 'a' && getEntity(p.session.state, 'ferry:pz').ferry.state === 'wait');
+  // The fail comes at the moment of the crossing, on this bank (#182): the boat stays, and the dog
+  // goes back onto the bank.
+  p.run(SCENE_END, () => !ferry().scene && getEntity(p.session.state, 'ferry:pz').ferry.side === 'a' && getEntity(p.session.state, 'ferry:pz').ferry.state === 'wait');
   assert.deepEqual(ferry().where, { dog: 'a', chicken: 'a', rice: 'a' }, 'all come back');
   // A wave gives the hints in order.
   for (const k of data.ferry.hints) {
@@ -172,7 +174,7 @@ test('the pots: grade 1 needs two bowls in one pour; from grade 3, four bowls, w
 });
 
 test('a puzzle never blocks a task or the story: no act of a puzzle while a task is open, and no flag of the story', async () => {
-  const p = await at(FERRY, 1);
+  const p = await at(FERRY, 2);
   p.session.startTrial('fisher');
   p.run(1);
   const acts = [];
@@ -182,7 +184,7 @@ test('a puzzle never blocks a task or the story: no act of a puzzle while a task
 });
 
 test('Nghé never stands on a thing of a puzzle, so that a tap on the thing is not a tap on Nghé', async () => {
-  const p = await at(FERRY, 1);
+  const p = await at(FERRY, 2);
   const nghe = p.session.state.entities.find((e) => e.follow?.target === 'hero');
   assert.ok(nghe, 'Nghé follows the hero');
   const dog = getEntity(p.session.state, 'pz:dog').position;
@@ -219,7 +221,7 @@ test('with a pot in the hands, a tap on the well is a tap on the well, not on th
 });
 
 test('the scene of a wrong pair on the other bank is in the view with the hero', async () => {
-  const p = await at(FERRY, 1);
+  const p = await at(FERRY, 2);
   const views = [];
   p.session.listen((e) => { if (e.type === 'workView' && e.key === 'puzzle') views.push(e); });
   p.tapThing('pz:dog');
@@ -282,7 +284,7 @@ test('a grade changed before the first move of the pots gives the need of the ne
 });
 
 test('a puzzle that the child started goes on past midnight', async () => {
-  const p = await at(FERRY, 1);
+  const p = await at(FERRY, 2);
   p.tapThing('pz:dog');
   assert.equal(p.press(), 'take');
   p.session.state.clock.minutes += 1440;

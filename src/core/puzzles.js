@@ -30,6 +30,13 @@ export const puzzleDay = (def, seed, day) => hashSeed(`${seed}:puzzle:${def.id}:
 
 // The ferry: the things on a bank with no hero there that cannot stay alone ([eater, eaten, scene]),
 // or null. side: { thing: 'a' | 'b' | 'boat' }.
+// The riddle of the ferry at a grade (#182): the easy riddle at its grades, else the full one.
+export function ferryLevel(def, grade) {
+  const easy = def?.easy;
+  const g = Number(grade ?? 1);
+  if (easy && g >= easy.grades[0] && g <= easy.grades[1]) return { ...def, ...easy };
+  return def;
+}
 export function wrongPair(def, where, bank) {
   const on = def.things.filter((t) => where[t] === bank);
   return def.pairs.find(([a, b]) => on.includes(a) && on.includes(b)) ?? null;
@@ -99,7 +106,7 @@ export function createPuzzles(deps) {
   const after = (t, fn) => later.push({ t, fn });
 
   // ---- The ferry ------------------------------------------------------------------------------
-  const F = data.ferry;
+  let F = data.ferry;
   const thingId = (t) => `pz:${t}`;
   const LOOK = { dog: 'dog', chicken: 'chicken', rice: 'sack' };
   function setFerry() {
@@ -109,6 +116,7 @@ export function createPuzzles(deps) {
     // ferry went away in the middle of the crossings).
     if (ferry?.day === day || (ferry?.started && !ferry.solved)) return;
     clearFerry();
+    F = ferryLevel(data.ferry, deps.grade());
     if (!F || !isDay(F) || s.solved === day) return;
     const at = placeOf(F, F.at);
     if (!at) return;
@@ -176,6 +184,19 @@ export function createPuzzles(deps) {
     ferry.snapshot = { where: { ...ferry.where }, side: f.side };
     const s = st('ferry');
     s.tries += 1;
+    // A crossing that leaves a wrong pair alone fails at the moment, in view (#182: "Ôi, gà mổ gạo
+    // rồi!" came only at the next tap, and the child never saw the peck): the boat stays, the scene
+    // plays on this bank, and the thing in the boat goes back.
+    const pair = wrongPair(F, ferry.where, f.side);
+    if (pair) {
+      ferry.wrong += 1;
+      ferry.scene = { pair, t: 0, bank: f.side, stay: true };
+      const pts = pair.slice(0, 2).map((t) => ({ ...getEntity(w(), thingId(t)).position }));
+      deps.look(pts);
+      deps.say('pz:traveler', `puzzle.ferry.${pair[2]}`, {});
+      deps.sound(pair[2] === 'chase' ? 'bark' : 'peck');
+      return;
+    }
     const riders = ['hero', ...(ferry.load ? [thingId(ferry.load)] : [])];
     f.riders = riders;
     f.call = f.side;
@@ -189,6 +210,8 @@ export function createPuzzles(deps) {
   function ferried(ev) {
     if (!ferry || ev.id !== 'ferry:pz') return;
     const f = boat().ferry;
+    // The tap on the boat was for this crossing (#182: after it, the press crossed empty again).
+    deps.unchoose?.('ferry:pz');
     if (ferry.demo) {
       if (ferry.demo.step === 'go') {
         ferry.demo.step = 'back';
@@ -238,7 +261,7 @@ export function createPuzzles(deps) {
       s.days.push(deps.day());
       s.crossings = s.tries;
       deps.log('puzzle', { id: 'ferry', crossings: s.tries, least: F.least });
-      deps.say('pz:traveler', 'puzzle.ferry.done', {});
+      deps.say('pz:traveler', F.done ?? 'puzzle.ferry.done', {});
       // The traveler gives the eggs from his hand to the hero, in view, with a line that names them
       // (#110: the gift came as a small egg under the count of rice).
       const tr = getEntity(w(), 'pz:traveler');
@@ -250,9 +273,10 @@ export function createPuzzles(deps) {
       s.tries = 0;
       return;
     }
-    // After a crossing, the traveler says what is on the bank that the hero left (#110).
-    const names = namesOn(left);
-    if (names.length) deps.say('pz:traveler', 'puzzle.ferry.left', { list: names });
+    // After a crossing, the traveler says the next move (#182: "Bên kia còn con chó." made a child
+    // leave the chicken with the rice): a hint is a next move, never a list.
+    const next = stepHint();
+    if (next) deps.say('pz:traveler', next.key, next.params);
   }
   // The view shows both landings, the boat, the things on each bank, and the traveler (#110: the
   // things on the far bank were out of the view, and a child could not tell who was on which side).
@@ -342,6 +366,24 @@ export function createPuzzles(deps) {
     if (sc.t < SCENE) return;
     ferry.scene = null;
     if (getEntity(w(), 'pz:spill')) removeEntity(w(), 'pz:spill');
+    // A fail at the moment of the crossing: the thing in the boat goes back onto the bank.
+    if (sc.stay) {
+      if (ferry.load) unload();
+      else pack();
+      deps.say('pz:traveler', 'puzzle.ferry.again', {});
+      // From the second fail, the traveler says the next right move and points at its thing (#182:
+      // a hint is a next move).
+      const next = ferry.wrong >= 2 ? stepHint() : null;
+      if (next) {
+        after(OFFER_LINE, () => {
+          if (!ferry || ferry.scene) return;
+          deps.say('pz:traveler', next.key, next.params);
+          const e = next.thing ? getEntity(w(), thingId(next.thing)) : null;
+          if (e) point(e.position, 2);
+        });
+      }
+      return;
+    }
     pack();
     // The boat comes back with the hero and the thing of that crossing.
     const f = boat().ferry;
@@ -528,7 +570,7 @@ export function createPuzzles(deps) {
       const h = hero()?.position;
       if (!h || deps.busy()) return;
       const chosen = deps.chosen();
-      if (ferry && boat()?.ferry.state === 'wait' && !ferry.scene && !ferry.demo) {
+      if (ferry && !ferry.solved && boat()?.ferry.state === 'wait' && !ferry.scene && !ferry.demo) {
         const f = boat().ferry;
         const side = f.side;
         const land = side === 'a' ? f.landA : f.landB;
@@ -538,11 +580,16 @@ export function createPuzzles(deps) {
           // At the landing (nearer to it than to the thing), the act is the crossing: so the boat
           // can go back empty. The button shows the thing that the press takes (#139).
           if (!ferry.load) {
-            for (const t of F.things) {
-              if (ferry.where[t] !== side) continue;
-              const e = getEntity(w(), thingId(t));
-              if (chosen !== e.id && dist(h, e.position) >= dist(h, land)) continue;
-              add({ act: 'take', icon: 'hand-pick', thing: LOOK[t], target: e.id, at: e.position, rank: chosen === e.id ? -1 : 0, work: chosen === e.id, run: () => load(t) }, reach + 2);
+            // On the first bank, a press with no tap takes the nearest thing that waits there (#182:
+            // at the landing the press crossed with nothing again and again); on the far bank, a
+            // thing goes back only after a tap on it.
+            const here = F.things.filter((t) => ferry.where[t] === side).map((t) => ({ t, e: getEntity(w(), thingId(t)) })).sort((p, q) => dist(h, p.e.position) - dist(h, q.e.position));
+            for (const [i, { t, e }] of here.entries()) {
+              // Only in the easy riddle (no pair that fights): in the full riddle the child chooses
+              // each thing with a tap, and presses alone would repeat one wrong move.
+              const nearest = side === 'a' && i === 0 && !F.pairs.length;
+              if (chosen !== e.id && !nearest && dist(h, e.position) >= dist(h, land)) continue;
+              add({ act: 'take', icon: 'hand-pick', thing: LOOK[t], target: e.id, at: e.position, rank: chosen === e.id ? -24 : nearest ? -20 : 0, work: chosen === e.id || nearest, run: () => load(t) }, nearest ? reach + 12 : reach + 2);
             }
           } else {
             const t = ferry.load;
@@ -554,7 +601,14 @@ export function createPuzzles(deps) {
           // With the boat empty, a thing nearer than the landing comes first (its "take"); with a
           // thing in the boat, the crossing.
           const full = !ferry.load && F.things.every((t) => ferry.where[t] === side);
-          add({ act: 'cross', icon: 'boat', thing: ferry.load ? LOOK[ferry.load] : null, target: 'ferry:pz', at: { x: land.x, y: h.y, z: land.z }, rank: ferry.load ? -1 : 8, run: () => (full ? emptyBoat() : cross()) }, reach + 8);
+          // At the boat (or after a tap on the boat), the button is the crossing, also with nothing
+          // in the hands (#182: "Bấm nút có hình con đò." while the button was the ride).
+          // With all the things on this bank, an empty crossing is no move: a thing comes first.
+          // On the first bank with things that wait, the take comes first, and an empty crossing
+          // needs a tap on the boat.
+          const waiting = !F.pairs.length && !ferry.load && side === 'a' && F.things.some((t) => ferry.where[t] === 'a');
+          const atBoat = !full && (chosen === 'ferry:pz' || (!waiting && (dist(h, land) <= reach + 3 || dist(h, boat().position) <= reach + 3)));
+          add({ act: 'cross', icon: 'boat', thing: ferry.load ? LOOK[ferry.load] : null, target: 'ferry:pz', at: { x: land.x, y: h.y, z: land.z }, rank: ferry.load || atBoat ? -2 : 8, work: atBoat, run: () => (full ? emptyBoat() : cross()) }, reach + 8);
         }
       }
       if (pots && !pots.demo) {
@@ -584,7 +638,9 @@ export function createPuzzles(deps) {
     },
     // A talk with the person of a puzzle: the puzzle again.
     talk(id) {
-      if (id === 'ferry' && ferry) {
+      // After the win the riddle does not start again (#182): the traveler thanks the child.
+      if (id === 'ferry' && ferry?.solved) deps.say('pz:traveler', 'puzzle.ferry.thanks', {});
+      else if (id === 'ferry' && ferry) {
         ferry.offered = true;
         sayOffer();
       }

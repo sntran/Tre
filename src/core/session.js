@@ -259,6 +259,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     data: data.puzzles ?? {}, profile, world: () => state, env: () => env, map: () => map, day: () => today(), seed: () => state.seed, grade: () => profile.grade ?? 1,
     busy: () => busy || Boolean(screen) || taskOn() || raidOn() || folk.active(),
     chosen: () => chosen?.id ?? null,
+    unchoose: (id) => { if (chosen?.id === id) chosen = null; },
     say: (id, textKey, params) => emit({ type: 'open', screen: 'callout', id, textKey, params }),
     sound: (name) => emit({ sound: name, type: 'sound' }),
     look: (points, turn = true) => emit({ type: 'workView', key: 'puzzle', points, sight: points, ...(turn ? {} : { turn: false }) }),
@@ -2833,9 +2834,16 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       say(a.textKey);
       return;
     }
+    // During the riddle of the ferry the eye says a line of the riddle, never to wade (#182: "Hãy lội
+    // qua chỗ cạn" during the riddle).
+    if (a.textKey && puzzles.here() && WADE_KEYS.test(String(textOfAction(a)))) {
+      say('puzzle.ferry.look');
+      return;
+    }
     if (a.textKey) say(textOfAction(a));
     if (a.open) queue(() => openCommand({ open: a.open }));
   }
+  const WADE_KEYS = /river|wade|ford|shallow/i;
 
   // A talk that starts a trial far from the place of its work (#125: the healer talked at the well,
   // and her beds and baskets lay behind a house while she named them): the person says one line and
@@ -5191,6 +5199,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // In a practice, a person who is not of the practice greets only after a tap (#51).
       else if (practice && q.kind === 'npc' && !ofPractice(q.ref) && !tapped) continue;
       else if (goalNear && q.kind === 'npc' && !goalPeople.has(q.ref) && !tapped) continue;
+      // The person of a riddle that is told: the riddle again only after a tap on the person (#182:
+      // the presses at the landing said the riddle again and again).
+      else if (q.kind === 'puzzle' && puzzles.here() && !tapped) continue;
       else if (tapped || q.kind !== 'npc' || !heard.has(pickTalk(data.npcs.npcs[q.ref] ?? {}, profile))) add({ ...base, act: 'talk', icon: 'talk', rank: goalPeople.has(q.ref) ? -1 : 3, run: () => interact({ kind: q.kind, id: q.ref }, q) }, REACH + 3);
     }
     if (!held) {
@@ -5650,6 +5661,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // At the place of a task, the look at a sign or a place is never the act, also after a tap
     // (#85: at the bridge the eye read the river, and the child left the planks).
     if (mentoring.activeKey()) list = list.filter((c) => c.act !== 'look');
+    // At a riddle the look is never the act either (#182: the eye at the river came between the
+    // crossings of the ferry).
+    if (puzzles.here()) list = list.filter((c) => (c.act !== 'look' && c.act !== 'ride') || tapped(c));
     if (!list.length) return null;
     // With a thing in the hands: a place in reach that takes it always comes before the ground,
     // and the hero turns to it (#44). The ground is a target only when no place is in reach.
@@ -7458,6 +7472,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     work: () => workNow(),
     // The figures that draw pale and see-through: they stand in front of the work (#147).
     seeThrough: () => seeIds,
+    // A riddle goes on near the hero (for the robot child, tools/robot).
+    puzzleHere: () => puzzles.here(),
     // The last tap: the id of its target (an entity), or null (#47).
     chosen: () => chosen?.id ?? null,
     // The place of a task that a tap at a map point (cells) chooses: its id, or null.

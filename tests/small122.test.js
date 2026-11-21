@@ -230,7 +230,8 @@ test('at the ferry, a wave after a wrong crossing with the chicken already over 
   const s0 = load('tests/stories/trial-fisher.json');
   let session = null;
   const said = [];
-  const failures = await runHeadless({ ...s0, at: ['phu-dong', 3, 62], clock: 9 * 1440 + 700, steps: [{ wait: 1 }] }, {
+  // The full riddle of the ferry is from grade 2 (#182).
+  const failures = await runHeadless({ ...s0, profile: { ...s0.profile, grade: 2 }, at: ['phu-dong', 3, 62], clock: 9 * 1440 + 700, steps: [{ wait: 1 }] }, {
     onSession: (x) => {
       session = x;
       x.listen((e) => { if (e.type === 'open' && e.textKey) said.push({ key: e.textKey, params: e.params }); });

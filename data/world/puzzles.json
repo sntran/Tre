@@ -1,5 +1,5 @@
 {
-  "_about": "The puzzles solved by doing (#104; docs/PUZZLES.md, src/core/puzzles.js). A puzzle is a side quest: a person offers it on some days (every: one day in this many, by the seed and the day; after: a flag that must be set first), it is optional, and nothing in the story waits for it. Its person has a small mark of a side quest (look mark-side), not the star of the story. No count of mistakes and no score of mastery for the puzzle itself; skill: the skill event of its math, where it has one. Each line is spoken, and a wave gives the next hint (hints, in order; a hint is never a question). era, tale (true for a tale told of a real person), who, and source (a published record: book or article, with its page; page null and checked false: not checked yet; book null: a record to find, docs/QUESTIONS.md). Places are cells from the top left corner of a map object (anchor). ferry (the river-crossing puzzle): the landings (a, b: the water spots of the boat; landA, landB: where the hero steps off), the bank spots of the things (spotsA, spotsB), the traveler (at), the pairs that cannot stay alone (pairs: [eater, eaten, scene]), and the gift. pots (the water-pouring puzzle at the well): the pots (sizes, in bowls), the need of each grade (levels: grades from, sizes, need, skill), and the places. tales: the tales of later eras, data only.",
+  "_about": "The puzzles solved by doing (#104; docs/PUZZLES.md, src/core/puzzles.js). A puzzle is a side quest: a person offers it on some days (every: one day in this many, by the seed and the day; after: a flag that must be set first), it is optional, and nothing in the story waits for it. Its person has a small mark of a side quest (look mark-side), not the star of the story. No count of mistakes and no score of mastery for the puzzle itself; skill: the skill event of its math, where it has one. Each line is spoken, and a wave gives the next hint (hints, in order; a hint is never a question). era, tale (true for a tale told of a real person), who, and source (a published record: book or article, with its page; page null and checked false: not checked yet; book null: a record to find, docs/QUESTIONS.md). Places are cells from the top left corner of a map object (anchor). ferry (the river-crossing puzzle): the landings (a, b: the water spots of the boat; landA, landB: where the hero steps off), the bank spots of the things (spotsA, spotsB), the traveler (at), the pairs that cannot stay alone (pairs: [eater, eaten, scene]), the gift, and the easy riddle of the young grades (easy: { grades, things, pairs, least, offer, hints, done }). pots (the water-pouring puzzle at the well): the pots (sizes, in bowls), the need of each grade (levels: grades from, sizes, need, skill), and the places. tales: the tales of later eras, data only.",
   "ferry": {
     "id": "ferry", "map": "phu-dong", "every": 3, "person": "traveler", "era": 1, "tale": false, "who": null, "source": "alcuin", "sources": ["alcuin", "ascher1990"],
     "anchor": "boat",
@@ -12,7 +12,17 @@
     "least": 7,
     "gift": { "egg": 2 },
     "offer": ["puzzle.ferry.start.1", "puzzle.ferry.start.2", "puzzle.ferry.start.3", "puzzle.ferry.how"],
-    "hints": ["puzzle.ferry.hint.1", "puzzle.ferry.hint.2", "puzzle.ferry.hint.3"]
+    "hints": ["puzzle.ferry.hint.1", "puzzle.ferry.hint.2", "puzzle.ferry.hint.3"],
+    "_easy": "At K and grade 1 (#182): two things that do not fight, so that the child learns the boat (one thing on each trip, and the trip back with nothing). Children of four to six plan about two to four moves ahead (Klahr and Robinson 1981); the full riddle needs seven crossings.",
+    "easy": {
+      "grades": [-1, 1],
+      "things": ["dog", "rice"],
+      "pairs": [],
+      "least": 3,
+      "offer": ["puzzle.ferry.start.1", "puzzle.ferry.easy.2", "puzzle.ferry.how"],
+      "hints": ["puzzle.ferry.easy.hint.1", "puzzle.ferry.easy.hint.2"],
+      "done": "puzzle.ferry.easy.done"
+    }
   },
   "pots": {
     "id": "pots", "map": "phu-dong", "every": 2, "person": "healer", "after": "trial.healer.done", "era": 1, "tale": false, "who": null, "source": "singmaster",

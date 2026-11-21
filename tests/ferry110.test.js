@@ -16,6 +16,8 @@ const CLOCK = 9 * 1440 + 700;
 
 async function at(cell) {
   const s = load('tests/stories/trial-fisher.json');
+  // The full riddle of the ferry is from grade 2 (#182).
+  s.profile = { ...s.profile, grade: 2 };
   let session = null;
   const said = [];
   const views = [];
@@ -106,7 +108,7 @@ test('next to a thing, the button takes it with no tap; an empty boat does not c
   assert.ok(p.said.includes('puzzle.ferry.empty'), p.said.join(', '));
 });
 
-test('after a crossing, the view frames the things of both banks, and the traveler says what is on the bank that the hero left', async () => {
+test('after a crossing, the view frames the things of both banks, and the traveler says the next move (#182)', async () => {
   const p = await at([3, 62]);
   p.run(10);
   p.standAt('pz:chicken');
@@ -123,7 +125,7 @@ test('after a crossing, the view frames the things of both banks, and the travel
     return pts.some((q) => Math.hypot(q.x - e.x, q.z - e.z) < 1);
   };
   assert.ok(near('pz:chicken') && near('pz:dog') && near('pz:rice'), 'the things of both banks are points of the view');
-  assert.ok(p.said.includes('puzzle.ferry.left'), p.said.join(', '));
+  assert.ok(p.said.some((k) => /^puzzle\.ferry\.next\./.test(k)), p.said.join(', '));
 });
 
 test('no ford and no stepping stones within the frame of the puzzle', () => {
