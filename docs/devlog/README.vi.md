@@ -10,6 +10,7 @@ Chúng tôi viết cho các bậc cha mẹ và cho bất kỳ ai muốn biết v
 
 | Ngày | Bài viết |
 | --- | --- |
+| 21/11/2026 | [Khi bấm mà không có gì xảy ra](2026-11-21-when-a-press-does-nothing.vi.md) |
 | 8/11/2026 | [Người máy chơi trước](2026-11-08-a-robot-plays-first.vi.md) |
 | 7/11/2026 | [Nghe mà không thấy](2026-11-07-heard-but-not-seen.vi.md) |
 | 1/11/2026 | [Bóng ma và ngõ cụt](2026-11-01-ghosts-and-dead-ends.vi.md) |
