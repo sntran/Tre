@@ -2519,7 +2519,15 @@ function tightHint(world, tz, line) {
   // The ring shows already: a refused press says the line of the ring again, the fisher points at
   // it, and it glows (#115: in a play, a child who only pressed heard "Chỗ này chật quá." ten times,
   // and nothing new came).
-  const ring = getEntity(world, 'why:fisher:next');
+  let ring = getEntity(world, 'why:fisher:next');
+  // A ring at a point that the rule does not allow now (a ring of a row before, or a point that a
+  // stake took) goes, and a new one comes (#174: the robot child heard "Đi tới vòng tròn này" again
+  // and again at a ring where no stake could go).
+  if (ring && !free.includes(Math.round(ring.position.x - line.x))) {
+    removeEntity(world, ring.id);
+    ring = null;
+    tz.zone.tights = Math.max(tz.zone.tights ?? 0, TIGHT_RING);
+  }
   if (ring) {
     if (fisher) {
       say(world, 'call', fisher.id, { key: 'fisher.tight.ring', params: {}, happened: true });

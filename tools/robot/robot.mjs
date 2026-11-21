@@ -30,7 +30,9 @@ const ROBOT_STEP = 1; // seconds of the world after each command
 const vi = createI18n(load('i18n/vi.json'), 'vi');
 // A text with a key in it: a word with dots and no space (npc.giong-sky.name, Frac.11.12).
 const KEY_IN_TEXT = /(^|[\s"(“])[A-Za-z][\w-]*\.[A-Za-z0-9][\w-]*(\.[\w-]+)*(?=$|[\s,.!?:;")”])/;
-const COUNT_WORD = /^num\.|^ord\./;
+// The count words, and the lines of a count (a count says the same words when the same thing goes
+// in and out again).
+const COUNT_WORD = /^num\.|^ord\.|\.count(\.|$)/;
 // The events that do not show a change to a child.
 const QUIET_EVENTS = new Set(['sound', 'hud', 'tapfx', 'goalShow', 'view', 'workView', 'names']);
 
@@ -288,7 +290,7 @@ export async function playScene(story, { kind = 'star', night = false, commands 
       // A count of the trap: it goes to the post of its count.
     } else if (kind === 'dealer' && deal()) {
       // A sack to a mat.
-    } else if (r < 0.5 && (glowed.length || rings().length) && tapGlow()) {
+    } else if ((r < 0.5 && glowed.length && tapGlow()) || (r < 0.85 && rings().length && tapGlow())) {
       // The thing that glows.
     } else if (r < 0.08 && tapPerson()) {
       // A person now and then.
