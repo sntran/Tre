@@ -52,13 +52,14 @@ export const LAWS = {
   noProgress: '80 commands with no change of progress while a work is open',
   trapPost: 'the trap of a count is not at the post of its count',
   flicker: 'the button changes by itself while the hero stands still',
+  dealWrong: 'at the share, the sack of a tap on a mat and a press went to another mat',
 };
 
 // Play one scene. story: a story of tests/stories/ (its profile, clock, and place); opts: { kind,
-// night, commands, grade, seed, laws (the laws to check; all when not given) }. Return { findings,
-// stats }.
-export async function playScene(story, { kind = 'star', night = false, commands = 120, grade = null, seed = 1, scene = story.name ?? 'scene', profile = null } = {}) {
-  const raw = { ...story, steps: [], ...(night ? { clock: NIGHT } : {}), ...(story.profile ? { profile: { ...story.profile, ...(grade !== null ? { grade } : {}) } } : {}) };
+// night, commands, grade, seed, steps (the first steps of the story, played before the robot) }.
+// Return { findings, stats }.
+export async function playScene(story, { kind = 'star', night = false, commands = 120, grade = null, seed = 1, scene = story.name ?? 'scene', profile = null, steps = [] } = {}) {
+  const raw = { ...story, steps, ...(night ? { clock: NIGHT } : {}), ...(story.profile ? { profile: { ...story.profile, ...(grade !== null ? { grade } : {}) } } : {}) };
   let session = null;
   const lines = []; // { key, text, tick, tapped }
   const events = [];
@@ -66,7 +67,10 @@ export async function playScene(story, { kind = 'star', night = false, commands 
   let morning = false;
   let noted = 0; // the events of the world that a child sees or hears (not a sound only)
   let glowed = []; // the things that glow now
-  await runHeadless(raw, { profile, onSession: (x) => {
+  let command = 0;
+  let tappedAt = -1; // the command of the last tap of the robot on a thing
+  // The first steps of the story (steps) play before the robot: their failures go in the stats.
+  const failed = await runHeadless(raw, { profile, onSession: (x) => {
     session = x;
     x.listen((e) => {
       events.push(e);
@@ -87,8 +91,6 @@ export async function playScene(story, { kind = 'star', night = false, commands 
   const seen = new Set();
   const st = () => session.state;
   const hero = () => getEntity(st(), 'hero');
-  let command = 0;
-  let tappedAt = -1; // the command of the last tap of the robot on a thing
   const run = (sec) => {
     for (let i = 0; i < sec / STEP; i++) {
       session.step();
@@ -207,17 +209,29 @@ export async function playScene(story, { kind = 'star', night = false, commands 
     const held = hero()?.hands?.holds;
     if (!held) {
       const loot = getEntity(st(), 'zone:loot')?.zone;
-      if (!loot || loot.items.length < who.length) return false;
+      // Deal until each mat has its fair count; the rest stays on the pile.
+      const onMats = who.reduce((a, w) => a + (getEntity(st(), `zone:share-${w}`)?.zone.items.length ?? 0), 0);
+      const fair = Math.floor((onMats + (loot?.items.length ?? 0)) / who.length) * who.length;
+      if (!loot?.items.length || onMats >= fair) return false;
       session.command({ type: 'tap', target: { thing: loot.items[0] } });
       run(4);
       const a = session.action();
       if (a) session.command({ type: 'hands', id: a.id });
       return true;
     }
-    session.command({ type: 'tap', target: { thing: `mat:share-${who[turn % who.length]}` } });
+    // A tap on the mat of the turn (on its ground, as a finger taps it), and a press.
+    const want = `zone:share-${who[turn % who.length]}`;
+    const mat = getEntity(st(), want)?.zone;
+    if (!mat) return false;
+    session.command({ type: 'tap', target: { ground: { x: mat.x / 2, y: mat.z / 2, h: mat.y / 2, thing: false, object: null } } });
     run(4);
     const a = session.action();
+    const counts = () => (share.zone.who ?? who).map((w) => getEntity(st(), `zone:share-${w}`)?.zone.items.length ?? 0).join(',');
+    const before = counts();
+    const n = mat.items.length;
     if (a) session.command({ type: 'hands', id: a.id });
+    run(2);
+    if (counts() !== before && mat.items.length !== n + 1) find('dealWrong', `${want}: ${before} > ${counts()}`);
     turn += 1;
     return true;
   };
@@ -347,7 +361,7 @@ export async function playScene(story, { kind = 'star', night = false, commands 
       }
     }
   }
-  return { findings, stats: { commands, lines: lines.length, tick: st().tick }, start, end: where(), heard: lines.map((l) => l.text), lines: lines.map((l) => ({ key: l.key, text: l.text, tick: l.tick, command: l.command })) };
+  return { findings, stats: { commands, lines: lines.length, tick: st().tick, failed: failed.map((f) => `step ${f.step}: ${f.message}`) }, start, end: where(), heard: lines.map((l) => l.text), lines: lines.map((l) => ({ key: l.key, text: l.text, tick: l.tick, command: l.command })) };
 }
 
 // The scenes of tests/stories/: [{ name, story }].
