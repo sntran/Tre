@@ -318,7 +318,7 @@ export async function mountVillage(ctx, params = {}) {
   // The bamboo of the hero (#8): one section for each hero level, and a shoot on top that grows
   // with the experience of the level (src/core/growth.js).
   const bamboo = h('span', { class: 'hud-bamboo', 'aria-hidden': 'true' });
-  const heroFace = h('button', { class: 'hud-hero', type: 'button', 'aria-label': t('ui.home') }, [
+  const heroFace = h('button', { class: 'hud-hero', type: 'button', 'aria-label': t('ui.notebook') }, [
     h('span', { class: 'mini-portrait' }, [portraitCanvas(ctx, heroLookOf(ctx), { size: 44 })]),
     bamboo,
     h('span', { class: 'hud-name', text: profile.hero.name }),
@@ -337,7 +337,15 @@ export async function mountVillage(ctx, params = {}) {
     bamboo.replaceChildren(...sections, shoot);
   }
   drawBamboo();
-  heroFace.addEventListener('click', () => send({ type: 'talkTo', id: 'grandma' }));
+  // The portrait opens the notebook (#180: a tap on the face walked the hero to grandma behind it,
+  // and a card came); a touch on it never goes through to the world.
+  heroFace.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (busy) return;
+    ctx.log('action', { kind: 'notebook' });
+    modals.notebook?.(ctx);
+  });
+  for (const type of ['pointerdown', 'pointerup', 'touchstart']) heroFace.addEventListener(type, (e) => e.stopPropagation());
   const menuBtn = button(null, () => { ctx.log('action', { kind: 'menu' }); ctx.openMenu(); }, { cls: 'icon-btn', icon: 'ui/menu', aria: t('ui.menu') });
   // The country map. The world waits while it is open.
   const mapBtn = button(null, () => {
@@ -681,7 +689,7 @@ export async function mountVillage(ctx, params = {}) {
       const line = bubbleLine(ev, lineVoice);
       // The names of the glossary show as names (#114: "[[nghecalf]] của cháu là trâu con đấy.").
       const text = tn(ev.textKey, ev.params);
-      showBubble(ev.id, gloss ? `${text}\n${gloss}` : text, null, line);
+      showBubble(ev.id, gloss ? `${text}\n${gloss}` : text, null, line, ev.avoid ?? []);
       voiceQueue.offer(line, speaking() || Boolean(spoken), performance.now() / 1000);
       // The gloss is spoken after the line (#106).
       if (gloss && line) voiceQueue.offer({ id: line.id, key: null, text: gloss, params: {}, voice: line.voice, kind: 'world' }, true, performance.now() / 1000);
@@ -1462,7 +1470,9 @@ export async function mountVillage(ctx, params = {}) {
     laterBubbles = laterBubbles.filter((x) => happenedHolds(x[0]));
     for (const args of due) showBubble(...args);
   }
-  function showBubble(id, text, icon = null, line = null) {
+  // avoid: the figures that the line names (#180: the bubble covered the new head of Gióng): the
+  // bubble does not cover them.
+  function showBubble(id, text, icon = null, line = null, avoid = []) {
     if (!icon && line?.kind !== 'world' && (happenedHolds(id) || laterBubbles.some((x) => x[0] === id))) {
       laterBubbles.push([id, text, icon, line]);
       return;
@@ -1501,7 +1511,7 @@ export async function mountVillage(ctx, params = {}) {
     }
     marks.append(el);
     // A longer line stays longer (a greeting of one line), and wraps (styles/main.css).
-    bubbles.push({ id, el, age: 0, icon, line, life: lineLife(icon ? '' : text), width: el.offsetWidth, height: el.offsetHeight });
+    bubbles.push({ id, el, age: 0, icon, line, avoid, life: lineLife(icon ? '' : text), width: el.offsetWidth, height: el.offsetHeight });
   }
   // The pips of the goal bar light up one at a time, while the person says how many (#61).
   function showPips() {
@@ -2322,7 +2332,8 @@ export async function mountVillage(ctx, params = {}) {
       // talks from the edge with a tail toward the person, for a short time (#53).
       const rise = Math.min(b.age, LINE_LIFE) * 10 + (b.icon ? 40 : 0);
       const foot = view.project(f.x, f.y, f.z);
-      const at = placeBubble({ x: q.x, y: q.y - rise }, b.width, b.height, { screen: { w: size.width, h: size.height, top: inset.top, bottom: size.height }, hero: heroAt, controls, stars: marks, foot, work: workAt, corner });
+      const named = (b.avoid ?? []).map(figureBox).filter(Boolean);
+      const at = placeBubble({ x: q.x, y: q.y - rise }, b.width, b.height, { screen: { w: size.width, h: size.height, top: inset.top, bottom: size.height }, hero: heroAt, controls, stars: marks, foot, work: named.length ? [...workAt, ...named] : workAt, corner });
       if (at.away) b.life = Math.min(b.life, AWAY_LIFE);
       const side = !at.tail ? null : at.tail.x < at.x0 ? 'left' : at.tail.x > at.x1 ? 'right' : at.tail.y > at.y1 ? 'down' : 'up';
       if (b.side !== side) {
@@ -2356,6 +2367,15 @@ export async function mountVillage(ctx, params = {}) {
   // task (a bed, a heap, the stem), its places (a mat, the basket), and the things of a puzzle. A
   // bubble never covers them.
   const WORK_MARK_NEAR = 40; // half blocks from the hero
+  // The box of a figure on the screen, from its feet to over its head.
+  function figureBox(id) {
+    const g = figures.placeOf(id);
+    if (!g) return null;
+    const top = view.project(g.x, g.y + (g.height ?? 1) + 0.3, g.z);
+    const foot = view.project(g.x, g.y, g.z);
+    const half = Math.max(16, Math.abs(foot.y - top.y) * 0.35);
+    return { x0: top.x - half, x1: top.x + half, y0: top.y, y1: foot.y };
+  }
   function workMarks() {
     const hp = getEntity(state, 'hero')?.position;
     if (!hp) return [];
@@ -2676,7 +2696,7 @@ export async function mountVillage(ctx, params = {}) {
   const offLang = ctx.bus.on('lang', () => {
     // The open line of a talk shows (and is said) in the new language (#82).
     if (box && boxLine) box.show(boxLine);
-    heroFace.setAttribute('aria-label', t('ui.home'));
+    heroFace.setAttribute('aria-label', t('ui.notebook'));
     menuBtn.setAttribute('aria-label', t('ui.menu'));
     jumpBtn.setAttribute('aria-label', t('ui.jump'));
     jumpBtn.title = t('ui.jump');

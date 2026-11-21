@@ -1021,16 +1021,35 @@ export function workThing(look) {
     // mane. The seat (the top of the back) is at STEED_SEAT over the ground; k: the size of the
     // horse against a horse with its seat at 1.65.
     case 'steed': {
-      const k = STEED_SEAT / 1.65;
-      const legs = [[-0.35, -0.9], [0.35, -0.9], [-0.35, 0.9], [0.35, 0.9]].map(([x, z], i) => P(`leg${i}`, [0.35 * k, 1.05 * k, 0.35 * k], 'ink', [x * k, 0.525 * k, z * k]));
+      // The iron horse of Gióng (#180: "a gray table"): a horse of dark iron with lighter edges, a
+      // neck that rises to a head with ears and a mane, four legs apart, and a tail. It faces +z, and
+      // the seat (STEED_SEAT) is the top of its back.
+      const k = STEED_SEAT / 1.7;
+      const at = (x, y, z) => [x * k, y * k, z * k];
+      const sz = (x, y, z) => [x * k, y * k, z * k];
+      const legs = [[-0.3, -0.75], [0.3, -0.75], [-0.3, 0.75], [0.3, 0.75]].flatMap(([x, z], i) => [
+        P(`leg${i}`, sz(0.26, 1.0, 0.26), 'ash', at(x, 0.55, z)),
+        P(`hoof${i}`, sz(0.32, 0.14, 0.34), 'ink', at(x, 0.07, z)),
+      ]);
       return still([
         ...legs,
-        P('body', [0.9 * k, 0.7 * k, 2.4 * k], 'ash', [0, STEED_SEAT - 0.35 * k, 0]),
-        P('neck', [0.5 * k, 1 * k, 0.5 * k], 'ash', [0, STEED_SEAT + 0.25 * k, 1.1 * k]),
-        P('head', [0.5 * k, 0.45 * k, 1 * k], 'ash', [0, STEED_SEAT + 0.75 * k, 1.5 * k]),
-        P('mane', [0.15 * k, 0.8 * k, 0.5 * k], 'vermilion', [0, STEED_SEAT + 0.45 * k, 0.9 * k]),
-        P('tail', [0.2 * k, 0.8 * k, 0.2 * k], 'ink', [0, STEED_SEAT - 0.35 * k, -1.3 * k]),
-      ], STEED_SEAT + 1 * k);
+        P('trunk', sz(0.84, 0.66, 1.9), 'ash', at(0, 1.37, 0)),
+        P('back', sz(0.86, 0.06, 1.92), 'ashLight', at(0, 1.71, 0), { mark: true }),
+        P('chest', sz(0.74, 0.6, 0.36), 'ash', at(0, 1.42, 1.08)),
+        P('neck1', sz(0.5, 0.62, 0.46), 'ash', at(0, 1.92, 1.2)),
+        P('neck2', sz(0.44, 0.6, 0.42), 'ash', at(0, 2.38, 1.42)),
+        P('head', sz(0.42, 0.4, 0.86), 'ash', at(0, 2.66, 1.86)),
+        P('muzzle', sz(0.36, 0.3, 0.3), 'ink', at(0, 2.56, 2.36)),
+        P('eyeL', sz(0.04, 0.1, 0.1), 'ink', at(-0.22, 2.74, 1.86), { mark: true }),
+        P('eyeR', sz(0.04, 0.1, 0.1), 'ink', at(0.22, 2.74, 1.86), { mark: true }),
+        P('earL', sz(0.11, 0.32, 0.12), 'ash', at(-0.13, 3.02, 1.56)),
+        P('earR', sz(0.11, 0.32, 0.12), 'ash', at(0.13, 3.02, 1.56)),
+        P('mane', sz(0.14, 0.72, 0.36), 'ink', at(0, 2.3, 1.18)),
+        P('edgeL', sz(0.04, 0.06, 1.9), 'ashLight', at(-0.43, 1.05, 0), { mark: true }),
+        P('edgeR', sz(0.04, 0.06, 1.9), 'ashLight', at(0.43, 1.05, 0), { mark: true }),
+        P('tailTop', sz(0.18, 0.2, 0.3), 'ink', at(0, 1.6, -1.05)),
+        P('tail', sz(0.16, 0.9, 0.2), 'ink', at(0, 1.1, -1.18)),
+      ], STEED_SEAT + 1.4 * k);
     }
     // A stake of the fish trap, half in the water.
     // The boat of the ferry puzzle (#104): the skiff with its middle at its point. It is longer than

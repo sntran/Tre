@@ -806,8 +806,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // A rider in front of the hero who stands still (a talk with a person of the way, #150: Gióng on
     // his horse hid the hero and the person) also draws pale.
     const still = h && !hero().route;
+    // The hero is never an outline behind Gióng or an iron horse (#180: "Mai could not tell if she
+    // rode"): they are things for this rule, and they draw pale in front of the hero, also while the
+    // hero walks or rides.
+    // While the hero stands still, Gióng rides out of the way instead (#158).
+    const moving = !still || Boolean(hero()?.riding);
+    const bigs = h ? state.entities.filter((e) => ((moving && (e.id === 'npc:giong-hero' || e.id === 'mount:giong-hero')) || /^steed:/.test(e.id)) && e.position && !e.hidden && Math.hypot(e.position.x - h.x, e.position.z - h.z) <= SIGHT_NEAR).map((e) => ({ id: e.id, position: e.position, size: FIGURES.rider })) : [];
+    const pale = bigs.length ? [...seeThrough(bigs, [{ ...h, heights: HERO_HEIGHTS }], viewAz, VIEW.elevation, (f) => f.size.r)] : [];
     if (!pts.length && !still) {
-      seeIds = new Set();
+      seeIds = new Set(pale);
       return;
     }
     const figs = state.entities.filter((e) => e.position && Math.hypot(e.position.x - h.x, e.position.z - h.z) <= SIGHT_NEAR)
@@ -817,7 +824,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The hero, the person who talks, the person of the open task, and Gióng are never pale and do
     // not move for this; each other person, animal, or Nghé in front of the work, the hero, or the
     // speaker steps to a free spot beside it.
-    seeIds = new Set();
+    seeIds = new Set(pale);
     const speaking = talker && (state.tick - talker.tick) * STEP < TALK_HOLD ? getEntity(state, talker.id) : null;
     // Gióng has his own rule of spots (stepRider): he takes a new spot when he hides the work, the
     // hero, or the speaker.
@@ -4693,12 +4700,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   }
   const GROW_CLOSE = 0.6; // the frame of the growth of Gióng: this part of the near view (#170)
   // A line of the rice with the count of the pot as a word: n (the key), n.one, and n.zero.
-  function riceLine(key, n, glow, at) {
+  // avoid: the figures that the line names; its bubble does not cover them (#180).
+  function riceLine(key, n, glow, at, avoid = []) {
     const who = riceVoice();
     const k = n === 0 && /^rice\.help/.test(key) ? `${key}.zero` : n === 1 ? `${key}.one` : key;
     const params = { n: { key: `num.${n}` } };
     if (who) {
-      emit({ type: 'open', screen: 'callout', id: who.id, textKey: k, params, happened: true });
+      emit({ type: 'open', screen: 'callout', id: who.id, textKey: k, params, happened: true, ...(avoid.length ? { avoid } : {}) });
       if (at) who.gesture = { act: 'point', x: at.x, z: at.z, t: 2 };
     } else say(k, params);
     setCue(glow);
@@ -4711,11 +4719,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     glowing = [];
     const n = ev.ones ?? tz.zone.ones;
     if (ev.type === 'grow') {
-      riceLine(n ? 'rice.grow.rest' : 'rice.grow', n, [pot.id], pot.position);
       // Gióng grows in sight (#147: "But WHERE is Gióng? I didn't see him get bigger!"): he is the
       // point of the line, he glows, and he stretches up one head (the renderer shows the stretch
-      // slowly, with a small pause); a figure in front of him fades.
+      // slowly, with a small pause); a figure in front of him fades. The bubble of the line does not
+      // cover him (#180).
       const boy = personOf('giong-boy');
+      riceLine(n ? 'rice.grow.rest' : 'rice.grow', n, [pot.id], pot.position, boy ? [boy.id] : []);
       if (boy?.position && !boy.hidden) {
         boy.stretch = Number(ev.heads ?? tz.zone.heads ?? 0);
         setCue([pot.id, boy.id]);
@@ -5545,6 +5554,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // shows the talk, and one press gets the hero down and opens the talk (#60).
       const people = new Set(persons().filter((p) => p.kind === 'npc' || p.kind === 'encounter').map((p) => p.entity));
       // The children of a folk game too: the button joins the game (#114).
+      // Gióng who rides with the hero is no talk of the button (#180: on Nghé beside Gióng, the button
+      // was almost always his talk, and a press got the hero down): a tap on him talks.
+      const giong = profile.flags['giong.place'] === 'follow' ? personOf('giong-hero')?.id : null;
+      if (giong) people.delete(giong);
+      if (giong && chosen?.id === giong) people.add(giong);
       const talk = candidates().find((c) => ((c.act === 'talk' || c.act === 'raid') && people.has(c.target)) || (c.act === 'play' && getEntity(state, c.target)?.folkChild));
       // The hero gets down at once: the world waits while the talk is open, and a command of the
       // world comes only after it (#66: the hero stayed on the calf at the scouts).
@@ -6009,6 +6023,20 @@ export function createSession({ data, profile, learner = () => null, log = () =>
 
   // A tap: the hero, a plank outline, a plank, a person, a thing with a trigger zone, or a place
   // on the ground.
+  const STEED_TAP = 3.5; // half blocks from the middle of the iron horse
+  function steedTap(p) {
+    const steed = query(state, 'position').find((e) => /^steed:/.test(e.id) && !e.hidden && Math.hypot(e.position.x - p.x, e.position.z - p.z) <= STEED_TAP);
+    if (!steed) return false;
+    const h = hero();
+    worldCommand(state, { type: 'face', id: 'hero', x: steed.position.x, z: steed.position.z });
+    const near = (e) => e && !e.hidden && e.position && Math.hypot(e.position.x - h.position.x, e.position.z - h.position.z) <= NOTE_SAY;
+    const giong = personOf('giong-hero');
+    const smith = getEntity(state, 'npc:smith');
+    const who = near(giong) ? giong.id : near(smith) ? smith.id : 'hero';
+    emit({ type: 'open', screen: 'callout', id: who, textKey: 'steed.name', params: {} });
+    emit({ type: 'pulse', id: steed.id });
+    return true;
+  }
   function tap(target) {
     tapTick = state.tick;
     emit({ type: 'sound', sound: 'tap' });
@@ -6016,6 +6044,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The thing of an open riddle, anywhere: the tap finds it (#103). The tap still does what a tap
     // does: a tap on another thing is only a tap on that thing.
     const tapped = target.thing ?? target.pet ?? target.sleeper ?? target.person ?? target.animal;
+    // A tap on the iron horse says what it is (#180: a child took it for a table, and the hero walked
+    // behind it): "Ngựa sắt của Gióng."
+    if (target.ground && steedTap({ x: target.ground.x * 2, z: target.ground.y * 2 })) return;
     riddles.tap(target.ground ? { x: target.ground.x * 2, z: target.ground.y * 2 } : tapped ? getEntity(state, tapped)?.position : null, target.ground?.object ?? null);
     // An animal of the land answers a tap (#150: "The doggy didn't do anything when I tapped, my
     // buffalo said moo instead."): the dog barks and wags its tail, a chicken clucks, a duck quacks;
