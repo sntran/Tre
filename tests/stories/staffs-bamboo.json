@@ -60,6 +60,23 @@
       ]
     },
     {
+      "tap": {
+        "entity": "culm:staffs:0"
+      }
+    },
+    {
+      "until": {
+        "event": "call",
+        "with": {
+          "key": "mentor.first.you"
+        },
+        "timeout": 80
+      }
+    },
+    {
+      "wait": 3
+    },
+    {
       "press": {
         "culm": 0,
         "at": 5

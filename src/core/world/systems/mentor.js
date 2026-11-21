@@ -70,6 +70,17 @@ export const QUIET = 2.5;
 function play(world, ent, dt, env) {
   const sc = ent.script;
   if (sc.quiet && world.pressAt !== undefined && (world.tick - world.pressAt) * dt < QUIET) return;
+  // The task ends its lines (#176: after the win of the staffs, the count of the sample and "Em giữ
+  // nút lớn…" still came): a script that started in the task stops at the end of the task. A script
+  // that starts after the end (a count at the give) plays.
+  const key = String(sc.key ?? '');
+  if (key.startsWith('trial-')) {
+    sc.inTask ??= !taskDone(world, key);
+    if (sc.inTask && taskDone(world, key)) {
+      endScript(world, ent, { early: true });
+      return;
+    }
+  }
   sc.t += dt;
   while (sc.i < sc.steps.length && sc.steps[sc.i].at <= sc.t) {
     const st = sc.steps[sc.i];

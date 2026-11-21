@@ -167,6 +167,14 @@ test('the staffs: presses walk to the clump; quick taps do not cut, and the wood
     if (ev.type === 'slash' || ev.type === 'skill') slashes.push(ev);
     if (ev.type === 'open' && ev.textKey) said.push(ev.textKey);
   });
+  // A press walks to the clump, and the knife waits for the end of the first show of the
+  // woodcutter (#176).
+  session.command({ type: 'hands' });
+  for (let i = 0; i < 60 / STEP && !session.action()?.hold; i++) {
+    if (session.screen) session.command({ type: session.screen === 'dialogue' || session.screen === 'say' ? 'next' : 'close' });
+    session.step();
+    session.events();
+  }
   assert.deepEqual(playPresses(session, { presses: 8, hold: 0 }), []);
   assert.ok(!slashes.some((e) => e.type === 'slash'), 'a quick tap does not cut');
   assert.ok(said.includes('woodcutter.staffs.hold'), said.join(', '));

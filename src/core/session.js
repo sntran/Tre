@@ -2220,6 +2220,18 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return;
     }
     const a = pressed(id);
+    // A hold at the staffs is for the knife (#176: a hold walked to another person, "Chào Na!"):
+    // with no culm in reach, the hold walks to the nearest culm of the clump, never to a person.
+    const staffs = trialZone('staffs');
+    if (!busy && a?.act !== 'slash' && staffs && !staffs.zone.done && !staffs.zone.cut && inTaskArea('trial-staffs', hero().position)) {
+      const hp = hero().position;
+      const culm = query(state, 'item', 'position').filter((e) => e.item.kind === 'culm' && !e.hidden).sort((p, q) => distHb(hp, p.position) - distHb(hp, q.position))[0];
+      if (culm) {
+        goTo({ x: culm.position.x, z: culm.position.z }, culm.id);
+        emit({ type: 'press', id: id ?? btn?.id ?? null, act: 'slash', target: culm.id, wait: true, done: false });
+        return;
+      }
+    }
     // The picture is a hold at the work (a slash), and the press walks there first.
     if (a?.go && !busy) {
       runAct(a, id ?? btn?.id ?? null);
@@ -2227,6 +2239,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     if (!a?.hold || busy) return;
     holdAct = a;
+    // Only the count of the child plays while the knife is down (#176: the count of the show of the
+    // woodcutter and the count of the rings of the child came at the same time).
+    if (a.act === 'slash') mentoring.hush('trial-staffs');
     a.run();
     acted();
     emit({ type: 'pulse', id: a.target });
@@ -2575,8 +2590,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const ent = getEntity(state, `event:${id}`);
     if (!def || !ent) return;
     // One goal at a place (#129): during a task of the story here, she says a short line and waits.
-    if (def.lines.wait && storyTaskAt(ent.position)) {
-      say(def.lines.wait, {}, null, def.person);
+    // A small event does not open while a task of the story is open in reach (#176: the ducks near
+    // the clump of the staffs): with no wait line, the person of the event only greets.
+    if (storyTaskAt(ent.position) || storyTaskAt(hero()?.position)) {
+      if (def.lines.wait) say(def.lines.wait, {}, null, def.person);
+      else emit({ type: 'open', screen: 'callout', id: ent.id, textKey: GREETS.grown[state.tick % GREETS.grown.length], params: { name: profile.hero.name } });
       return;
     }
     const day = ent.dayEvent.day;
@@ -5122,12 +5140,16 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       }
       // The standing culms of the staffs: while the button is down, the mark of the slash goes up
       // the culm; when it goes up, the slash is at the mark.
+      // While the woodcutter shows the first cut, the knife waits (#176: one voice at a time): a
+      // press from afar still walks to the clump, to see the show.
       const staffs = open('staffs');
       if (staffs && !staffs.zone.cut) {
+        const showing = mentoring.showing('trial-staffs');
         for (const e of query(state, 'item', 'position')) {
           if (e.item.kind !== 'culm' || e.hidden) continue;
           const culm = e.item.slot;
-          add({ act: 'slash', icon: 'knife', target: e.id, at: e.position, rank: 0, work: true, hold: true, run: () => work('staffs', 'aim', { culm }), release: (held) => work('staffs', 'slash', { culm, held }) }, REACH + 2);
+          if (showing && distHb(hp, e.position) <= REACH + 2) continue;
+          add({ act: 'slash', icon: 'knife', target: e.id, at: e.position, rank: 0, work: true, hold: true, run: () => work('staffs', 'aim', { culm }), release: (held) => work('staffs', 'slash', { culm, held }) }, showing ? -1 : REACH + 2);
         }
       }
       // The stem of the woodcutter: a chalk mark at the place in front of the hero (or at the place
@@ -6599,6 +6621,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       ev = { ...ev, key: `${ev.key}.word` };
       setCue(['iron:smith', 'iron:smith-b'].filter((id) => getEntity(state, id)));
     }
+    // While the knife is down at the staffs, no line of a person: the count of the rings is the only
+    // voice (#176).
+    if (ev.type === 'call' && holdAct?.act === 'slash') return;
     if (ev.type === 'call' && !busy) emit({ type: 'open', screen: 'callout', id: ev.id, textKey: addressed(ev.id, ev.key), params: ev.params ?? {}, ...(ev.happened ? { happened: true } : {}), ...(ev.asked ? { asked: true } : {}) });
     // The mentors read the commits (before the learner takes them), the plank too long, and the
     // actions of the hands.

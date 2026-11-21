@@ -505,8 +505,12 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
         // The bridge is a task only near its gap.
         if (dist(hero.position, task.at) > NEAR) continue;
       }
+      // The help belongs to the task of the place (#176: with the ducks of a small event near the
+      // clump of the staffs, the hand took the help of the event): a task of the story comes
+      // before a small event in reach.
       const d = dist(hero.position, task.at);
-      if (d <= NEAR && (!best || d < best.d)) best = { key, d };
+      const ev = key.startsWith('event-');
+      if (d <= NEAR && (!best || (best.ev && !ev) || (best.ev === ev && d < best.d))) best = { key, d, ev };
     }
     return best?.key ?? null;
   }
@@ -601,7 +605,13 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       if (d > NEAR || world().paused) continue;
       // No idle move while the person counts or shows, or while a move waits, or soon after a wave
       // (#64: the offer ended a demo in the middle of its count, and answered a wave).
-      if (getEntity(world(), `script:${key}`) || delayed.some((x) => x.key === key) || waves.has(key) || t - (tr.lastWave ?? -Infinity) < AFTER_WAVE) continue;
+      // The time of a show or a count of the person is no idle time of the child (#176: right after
+      // the show of the staffs and "Giờ đến lượt em.", the idle help started the show again).
+      if (getEntity(world(), `script:${key}`) || delayed.some((x) => x.key === key)) {
+        tr.lastAct = Math.max(tr.lastAct, t);
+        continue;
+      }
+      if (waves.has(key) || t - (tr.lastWave ?? -Infinity) < AFTER_WAVE) continue;
       const seconds = t - Math.max(tr.lastAct, tr.lastCommit ?? tr.startT);
       const r = onIdle(st, { seconds, acted: tr.acted || st.tried }, famOf(key));
       if (!r) continue;
@@ -2242,6 +2252,22 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     taskOfPerson,
     // A move of the mentor of a task now (for example show: the next step on the real things).
     move: (key, move) => doMove(key, move, {}),
+    // The child starts the act of the task (a hold of the knife at the staffs, #176): the line, the
+    // show, or the count of the person ends now, and its waiting moves go, so that only the count of
+    // the child plays. A first show that did not start yet is shown later no more.
+    // The first show of a task is due or plays (#176: the show ends before the button of the child
+    // works).
+    showing(key) {
+      return getEntity(world(), `script:${key}`)?.script.move === 'first' || delayed.some((d) => d.key === key && d.move === 'first');
+    },
+    hush(key) {
+      const playing = getEntity(world(), `script:${key}`);
+      if (playing) endScript(world(), playing);
+      delayed = delayed.filter((d) => d.key !== key);
+      waves.delete(key);
+      const tr = tracks.get(key);
+      if (tr) tr.lastAct = now();
+    },
     tick,
     activeKey,
     // The person of a task (an entity id), or null.
