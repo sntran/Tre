@@ -32,6 +32,7 @@ import { STEP } from '../step.js';
 import { atWork } from './schedule.js';
 
 const BEND = 1.2; // seconds: the bent iron cools before it goes back into the fire
+const REHEAT = 2.5; // seconds: the bar of the iron horse in the fire after a bend (#179)
 const TIDE_IN = 2.5; // seconds: the tide stands high over the stakes
 const TIDE_OUT = 3; // seconds: the tide goes out and shows the trap
 const NEW_STEM = 1.2; // seconds: a new culm comes after staffs that are not equal
@@ -1462,8 +1463,19 @@ function act(world, e, want, env) {
       // The smith says what happened first, in words that a child knows (#70): not hot enough yet,
       // or cold again. From grade 3, the color that it had (#102); in warm water, the water, and he
       // points at the jar.
-      const key = warm && right ? 'smith.warm' : color ? `smith.color.${color}.gac` : early ? 'smith.bend.early' : 'smith.bend.late';
+      // The iron horse says the color then and the color to wait for (#179: "Sắt chưa đủ nóng" did not
+      // say when), and the bar goes back into the fire with the smith.
+      const horse = tz.id === 'zone:trial-horse';
+      const key = warm && right ? 'smith.warm' : color ? `smith.color.${color}.gac` : horse ? (early ? 'horse.bend.early' : 'horse.bend.late') : early ? 'smith.bend.early' : 'smith.bend.late';
       say(world, 'call', 'npc:smith', { key, happened: true });
+      if (horse) {
+        say(world, 'call', 'npc:smith', { key: 'horse.again', happened: true });
+        const hearth = zoneEnt(world, 'hearth');
+        if (hearth) {
+          tz.zone.reheat = true;
+          world.events.push({ type: 'glowThings', ids: [hearth.id] });
+        }
+      }
       // After a wrong color the smith names the right one and holds the gấc up next to the iron
       // again (#127: "Why doesn't he just tell me what color he wants?").
       const gac = color && key !== 'smith.warm' ? getEntity(world, 'gac:smith') : null;
@@ -1799,6 +1811,32 @@ function tickForge(world, tz, dt, env) {
     if (tz.zone.bent > 0) return;
     delete tz.zone.bent;
     tz.zone.heat = 0;
+    // The bar of the iron horse goes back into the fire for REHEAT seconds (#179: "Mình nung lại
+    // nhé."), and then onto the anvil again.
+    if (tz.zone.reheat === true) {
+      const hearth = zoneEnt(world, 'hearth');
+      if (hearth) {
+        tz.zone.reheat = REHEAT;
+        iron.position = { x: hearth.zone.x, y: hearth.zone.y + 0.6, z: hearth.zone.z, facing: Math.PI / 2 };
+        iron.look = 'iron-0';
+        return;
+      }
+      delete tz.zone.reheat;
+    }
+  }
+  if (typeof tz.zone.reheat === 'number') {
+    tz.zone.reheat -= dt;
+    if (tz.zone.reheat > 0) return;
+    // Out of the fire onto the anvil: its heat waits for the child at the anvil (#179: the red came
+    // while the child was away at the pile of ore).
+    delete tz.zone.reheat;
+    const a = tz.zone.anvil;
+    iron.position = { x: a.x, y: a.y + 1, z: a.z, facing: Math.PI / 2 };
+    iron.glow = 0;
+    iron.look = 'iron-0';
+    tz.zone.heat = 0;
+    tz.zone.waitHero = true;
+    say(world, 'fire', tz.id, { sound: 'lantern', again: true });
   }
   if (tz.zone.waitHero) {
     const h = getEntity(world, 'hero');

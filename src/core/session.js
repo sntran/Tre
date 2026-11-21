@@ -4639,6 +4639,21 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (share && !share.zone.done) return 'quest.share';
     return trialDef('horse')?.goals?.[horsePart()] ?? null;
   }
+  // While the bar is on the anvil, Nghé stands behind the anvil, on the side away from the camera
+  // (#179: she stood between the anvil and the camera).
+  const ANVIL_BACK = 4.5; // half blocks behind the anvil
+  function friendAtAnvil() {
+    const friend = query(state, 'follow').find((f) => f.follow.target === 'hero');
+    if (!friend) return;
+    const tz = trialZone('horse');
+    const on = horsePart() === 'quench' && tz?.zone.anvil;
+    if (on) {
+      const a = tz.zone.anvil;
+      const x = a.x - Math.sin(viewAz) * ANVIL_BACK;
+      const z = a.z - Math.cos(viewAz) * ANVIL_BACK;
+      if (!friend.follow.goal || friend.follow.goal.anvil) friend.follow.goal = { x, z, face: Math.atan2(a.x - x, a.z - z), anvil: true };
+    } else if (friend.follow.goal?.anvil) delete friend.follow.goal;
+  }
   // A line of the smith at the forge of the iron horse.
   function horseSay(key) {
     const smith = getEntity(state, 'npc:smith');
@@ -4653,6 +4668,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       bellows: [getEntity(state, 'bellows:horse')],
       anvil: [getEntity(state, tz.zone.iron), zoneOf('trough')],
       there: [getEntity(state, tz.zone.iron)],
+      wait: [getEntity(state, tz.zone.iron)],
     }[step].filter(Boolean);
     // The first time, the line of the new word comes after the step, in the same bubble.
     const word = { bellows: 'ongbe', anvil: 'de' }[step];
@@ -6929,6 +6945,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       gatherFor(currentGoal(data.quests.quests, cond())?.step.gather ?? null);
       stepLie();
     }
+    if (state.tick % 15 === 0) friendAtAnvil();
     worldStep(state, STEP, env);
     // The picture of the button, as the child sees it (about each 0.1 seconds).
     if (state.tick % 3 === 0 && !screen) button();
@@ -7004,7 +7021,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // A bar that is done lights its pip at once (#127: the pips lit only at the next update).
       if (ev.type === 'hiss') emit({ type: 'hud' });
       // The fire of the iron horse: the step of the anvil (#126).
-      if (ev.type === 'fire' && ev.id === 'zone:trial-horse') horseStep('anvil');
+      if (ev.type === 'fire' && ev.id === 'zone:trial-horse') horseStep(ev.again ? 'wait' : 'anvil');
+      // The bar turns red: the smith says it at the moment, and the bar and the water glow (#179:
+      // "Đỏ rực thì nhúng ngay" came while the bar was grey).
+      if (ev.type === 'glow' && ev.id === trialZone('horse')?.zone.iron && horseOpen()) {
+        horseSay('horse.red');
+        setCue([ev.id, zoneOf('trough')?.id].filter(Boolean));
+        emit({ type: 'actGlow' });
+      }
       // A wrong bundle: a hero who stands on the mat steps off to the place of the mat, so that the
       // rods show while the teacher counts them (#61: the walk to the teacher crossed the mat).
       if (ev.type === 'snap' && ev.id === 'zone:mat') {
