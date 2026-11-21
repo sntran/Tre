@@ -11,7 +11,10 @@
 //   presser  presses fast and often;
 //   counter  at the trap and the slingshot: one press for each post of the ask or of the enemy,
 //            and then it waits;
-//   dealer   at the share: one sack to each mat in turn, the rest on the pile.
+//   dealer   at the share: one sack to each mat in turn, the rest on the pile;
+//   walker   presses during each walk after a tap (#183: a boy of grade 4 pressed seven times
+//            while the hero walked to the basket of bà lang);
+//   slow     counts as the counter, but waits 3 s between the presses of a count (#183).
 // The world runs one second (ROBOT_STEP) after each command.
 import { runHeadless, data } from '../../tests/story-run.js';
 import { load } from '../../tests/helpers.js';
@@ -20,11 +23,14 @@ import { getEntity, query } from '../../src/core/world/state.js';
 import { createI18n } from '../../src/core/i18n.js';
 import { storyStars } from '../../src/core/stars.js';
 import { sideMarks } from '../../src/world/marks.js';
+import { drawable } from '../../src/world/figures.js';
+import { currentGoal } from '../../src/core/quests.js';
+import { conditionState } from '../../src/core/game.js';
 import { along, postAt } from '../../src/core/world/raids.js';
 import { createRng } from '../../src/core/rng.js';
 import { readdirSync, readFileSync } from 'node:fs';
 
-export const KINDS = ['star', 'presser', 'counter', 'dealer'];
+export const KINDS = ['star', 'presser', 'counter', 'dealer', 'walker', 'slow'];
 export const NIGHT = 1260; // minutes: 21:00
 const ROBOT_STEP = 1; // seconds of the world after each command
 const vi = createI18n(load('i18n/vi.json'), 'vi');
@@ -35,6 +41,43 @@ const KEY_IN_TEXT = /(^|[\s"(“])[A-Za-z][\w-]*\.[A-Za-z0-9][\w-]*(\.[\w-]+)*(?
 const COUNT_WORD = /^num\.|^ord\.|\.count(\.|$)/;
 // The events that do not show a change to a child.
 const QUIET_EVENTS = new Set(['sound', 'hud', 'tapfx', 'goalShow', 'view', 'workView', 'names']);
+// The lines of a fail of a work (#183: the same fail again with presses only).
+const FAIL_KEY = /\.(stuck|chase|short|late|early|miss|wrong|fail|broke|break)(\.|$)|\.bend\.(late|early)$/;
+// A line that names the big button: a hold or a press (#183). A sentence of a rule (when, each
+// time, after) or of a walk first ("…, rồi bấm nút") does not ask for the act now.
+const BUTTON_SAY = /(giữ|bấm) nút/i;
+const RULE_SAY = /(thì|khi|nếu|lần sau|mỗi lần|rồi bấm|rồi giữ)/i;
+export const sayNow = (text) => {
+  const s = String(text).split(/(?<=[.!?])\s+/).find((x) => BUTTON_SAY.test(x) && !RULE_SAY.test(x));
+  return s ? (/giữ nút/i.test(s) ? 'hold' : 'press') : null;
+};
+// The acts that are no work: a talk, a look, a ride, a rest.
+// The name of a work: a trial zone, its task, or a place of it (trial-event-duck, event-duck).
+export const workOf = (task) => String(task).replace(/^trial-/, '').replace(/-(gap|pile)$/, '');
+const NO_WORK = new Set(['talk', 'look', 'ride', 'ride-off', 'rest', 'sleep', 'pet', 'wake']);
+
+// The checks of the laws of #183, with no session (each has a test in tests/robot.test.js).
+// A lost press: an answer of the session to a press of the robot with no act, no wait for a walk,
+// no second press of the same act, no "not now" (nope), and no stop at a commit (arrive, #184). mine: the ids of the presses of the robot > the act.
+export function lostPresses(answers, mine) {
+  return answers.filter((e) => mine.has(e.id) && !e.done && !e.wait && !e.again && !e.nope && !e.arrive).map((e) => `${mine.get(e.id)}: ${e.why ?? '-'}`);
+}
+// Another work on the button: here (the work where the hero is), act (the act of the button).
+export function otherWork(here, act) {
+  if (!here || !act || here === 'puzzle' || here === 'folk') return false;
+  return act.act === 'raid' || (!NO_WORK.has(act.act) && Boolean(act.task) && workOf(act.task) !== workOf(here));
+}
+// The next state of the count of the same fail: fail (the last fail, or null), key (the key of a
+// line), tappedAt (the command of the last tap), command. A tap between two fails starts again.
+export function failStep(fail, key, tappedAt, command) {
+  if (!FAIL_KEY.test(key)) return fail;
+  return fail && fail.key === key && tappedAt < fail.command ? { key, n: fail.n + 1, command } : { key, n: 1, command };
+}
+// The things of an open riddle or work near the hero that the view does not draw: things
+// [{ id, near, open, held, entity }].
+export function unseen(things) {
+  return things.filter((t) => t.near && t.open && !t.held && !drawable(t.entity)).map((t) => t.id);
+}
 
 // The text of a line, with its parameters (as the view says it).
 function textOf(key, params = {}) {
@@ -56,6 +99,11 @@ export const LAWS = {
   trapPost: 'the trap of a count is not at the post of its count',
   flicker: 'the button changes by itself while the hero stands still',
   dealWrong: 'at the share, the sack of a tap on a mat and a press went to another mat',
+  lostPress: 'a press while the button shows an act, and the act does not come',
+  otherWork: 'while a work is open, the button offers another work, a raid, or an event',
+  failLoop: 'the same fail of a work three times in a row with presses only',
+  lineBeforeAct: 'a line says to press or hold the big button, and the button has no such act',
+  unseenThing: 'a thing of an open puzzle or work near the hero that the view does not draw',
 };
 
 // Play one scene. story: a story of tests/stories/ (its profile, clock, and place); opts: { kind,
@@ -72,6 +120,9 @@ export async function playScene(story, { kind = 'star', night = false, commands 
   let glowed = []; // the things that glow now
   let command = 0;
   let tappedAt = -1; // the command of the last tap of the robot on a thing
+  const presses = []; // the answers of the session to a press: { id, act, done, wait, again }
+  const mine = new Map(); // the id of a press of the robot > the act that the button showed
+  let saysNow = []; // the lines that name the button: { text, kind, due (tick) }
   // The first steps of the story (steps) play before the robot: their failures go in the stats.
   const failed = await runHeadless(raw, { profile, onSession: (x) => {
     session = x;
@@ -85,6 +136,11 @@ export async function playScene(story, { kind = 'star', night = false, commands 
       // call of the world comes as a bubble too).
       const key = e.type === 'open' ? e.textKey : null;
       if (key) lines.push({ key, text: textOf(key, e.params), tick: x.state.tick, tapped: tappedAt, command });
+      if (e.type === 'press') presses.push(e);
+      // A line that names the button: the act must be on the button 1 s after the line at the
+      // latest (a line takes about 0.06 s for each letter).
+      const kindNow = key ? sayNow(textOf(key, e.params)) : null;
+      if (kindNow) saysNow.push({ text: textOf(key, e.params), kind: kindNow, due: x.state.tick + (textOf(key, e.params).length * 0.06 + 1) / STEP });
       if (e.type === 'dawn' || (e.type === 'open' && e.textKey === 'rest.morning')) morning = true;
     });
   } });
@@ -94,11 +150,26 @@ export async function playScene(story, { kind = 'star', night = false, commands 
   const seen = new Set();
   const st = () => session.state;
   const hero = () => getEntity(st(), 'hero');
-  const run = (sec) => {
-    for (let i = 0; i < sec / STEP; i++) {
-      session.step();
-      session.events();
+  // One step of the world. A line that names the button waits for its act (the time of a talk
+  // on the screen does not count).
+  const stepOnce = () => {
+    session.step();
+    session.events();
+    if (!saysNow.length) return;
+    if (session.screen || session.busy) {
+      for (const w of saysNow) w.due += 1;
+      return;
     }
+    const a = session.action();
+    saysNow = saysNow.filter((w) => {
+      if (a && (w.kind === 'press' || a.hold)) return false;
+      if (st().tick < w.due) return true;
+      find('lineBeforeAct', w.text);
+      return false;
+    });
+  };
+  const run = (sec) => {
+    for (let i = 0; i < sec / STEP; i++) stepOnce();
   };
   const goalKey = () => session.workGoal?.() ?? null;
   const find = (law, detail = '') => {
@@ -131,15 +202,21 @@ export async function playScene(story, { kind = 'star', night = false, commands 
   };
   // A press of the act of the button. A press that the button refused (a picture that changed a
   // moment ago takes no press, SETTLE in src/core/session.js) is no press of an act.
+  // A press of the act a of the button (the id that the view sends with a press).
+  const hands = (a) => {
+    mine.set(a.id, a.act);
+    session.command({ type: 'hands', id: a.id });
+  };
   const press = () => {
     const a = session.action();
     if (!a) return false;
     const from = events.length;
     if (a.hold) {
+      mine.set(a.id, a.act);
       session.command({ type: 'hold', on: true, id: a.id });
       run(0.3 + random() * 2.6);
       session.command({ type: 'hold', on: false });
-    } else session.command({ type: 'hands', id: a.id });
+    } else hands(a);
     const answer = events.slice(from).find((e) => e.type === 'press');
     if (answer && !answer.done && !answer.wait) return false;
     return a;
@@ -207,8 +284,8 @@ export async function playScene(story, { kind = 'star', night = false, commands 
     for (let i = 0; i < n; i++) {
       const a = session.action();
       if (!a) break;
-      session.command({ type: 'hands', id: a.id });
-      run(0.5);
+      hands(a);
+      run(kind === 'slow' ? 3 : 0.5);
     }
     run(4);
     return true;
@@ -229,7 +306,7 @@ export async function playScene(story, { kind = 'star', night = false, commands 
       session.command({ type: 'tap', target: { thing: loot.items[0] } });
       run(4);
       const a = session.action();
-      if (a) session.command({ type: 'hands', id: a.id });
+      if (a) hands(a);
       return true;
     }
     // A tap on the mat of the turn (on its ground, as a finger taps it), and a press.
@@ -242,7 +319,7 @@ export async function playScene(story, { kind = 'star', night = false, commands 
     const counts = () => (share.zone.who ?? who).map((w) => getEntity(st(), `zone:share-${w}`)?.zone.items.length ?? 0).join(',');
     const before = counts();
     const n = mat.items.length;
-    if (a) session.command({ type: 'hands', id: a.id });
+    if (a) hands(a);
     run(2);
     if (counts() !== before && mat.items.length !== n + 1) find('dealWrong', `${want}: ${before} > ${counts()}`);
     turn += 1;
@@ -258,7 +335,12 @@ export async function playScene(story, { kind = 'star', night = false, commands 
       list = [];
     }
     const h = hero().position;
-    return { map: session.map?.id ?? null, hero: [Math.round(h.x / 2), Math.round(h.z / 2)], goal: goalKey(), quest: session.profile.quest ?? null, stars: list.map((m) => ({ at: [Math.round(m.x), Math.round(m.y)], who: m.who ?? null, thing: m.thing ?? null, line: m.key ? textOf(m.key, { who: m.who ? textOf(`npc.${m.who}.name`) : '', thing: m.name ? { key: m.name } : '' }) : null, work: Boolean(m.work), rest: Boolean(m.rest) })) };
+    // The goal of the quest strip (as src/ui/village.js shows it), and the work that the button
+    // offers (#183).
+    const q = currentGoal(data.quests.quests, conditionState(session.profile));
+    const strip = goalKey() ?? q?.step.goalKey ?? 'quest.free';
+    const a = session.screen ? null : session.action();
+    return { map: session.map?.id ?? null, hero: [Math.round(h.x / 2), Math.round(h.z / 2)], goal: goalKey(), strip: textOf(strip, q?.progress ?? {}), offer: a ? { act: a.act, target: a.target, task: a.task ?? null } : null, quest: session.profile.quest ?? null, stars: list.map((m) => ({ at: [Math.round(m.x), Math.round(m.y)], who: m.who ?? null, thing: m.thing ?? null, line: m.key ? textOf(m.key, { who: m.who ? textOf(`npc.${m.who}.name`) : '', thing: m.name ? { key: m.name } : '' }) : null, work: Boolean(m.work), rest: Boolean(m.rest) })) };
   };
   const start = where();
   let dead = 0;
@@ -266,6 +348,8 @@ export async function playScene(story, { kind = 'star', night = false, commands 
   let quiet = 0;
   let lastProgress = progress();
   const openFor = new Map();
+  let fail = null; // the last fail of a work: { key, n, command }
+  let pressSeen = 0;
   for (command = 0; command < commands; command++) {
     // A talk or a line: read it (a random choice).
     if (session.screen) {
@@ -286,7 +370,7 @@ export async function playScene(story, { kind = 'star', night = false, commands 
     const act = session.action();
     let pressed = null;
     const r = random();
-    if (kind === 'counter' && count()) {
+    if ((kind === 'counter' || kind === 'slow') && count()) {
       // A count of the trap: it goes to the post of its count.
     } else if (kind === 'dealer' && deal()) {
       // A sack to a mat.
@@ -306,14 +390,22 @@ export async function playScene(story, { kind = 'star', night = false, commands 
       if (act) pressed = press();
       else tapPerson();
     }
+    // The walker presses during the walk of a tap: one to three presses, 0.3 s apart.
+    if (kind === 'walker' && tappedAt === command) {
+      run(0.3);
+      for (let i = 0, n = 1 + Math.floor(random() * 3); i < n && hero().route && !session.screen; i++) {
+        const a = session.action();
+        if (a && !a.hold) hands(a);
+        run(0.3);
+      }
+    }
     // The button that changes by itself: an act that flips and flips back while the hero stands
     // still, in the wait after the command.
     const acts = [];
     const p0 = { ...hero().position };
     const steps = (kind === 'presser' ? 0.4 : ROBOT_STEP) / STEP;
     for (let i = 0; i < steps; i++) {
-      session.step();
-      session.events();
+      stepOnce();
       if (i % 3 === 0 && !session.screen && !hero().route) acts.push(session.action()?.act ?? null);
     }
     const still = Math.hypot(hero().position.x - p0.x, hero().position.z - p0.z) < 0.05;
@@ -334,6 +426,35 @@ export async function playScene(story, { kind = 'star', night = false, commands 
           if (process.env.ROBOT_DEBUG) console.log('silent talk', command, pressed, events.slice(-12).map((e) => e.type + (e.textKey ? `:${e.textKey}` : '') + (e.screen ? `:${e.screen}` : '') + (e.type === 'press' ? JSON.stringify(e) : '')).join(' '));
         }
       }
+    }
+    // A lost press: the session answered a press of the robot with no act (also a press that
+    // waited for the end of a walk), while the button showed an act.
+    for (const d of lostPresses(presses.slice(pressSeen), mine)) find('lostPress', d);
+    pressSeen = presses.length;
+    // Another work on the button while a work is open (the share, a trial, a riddle).
+    const here = session.screen ? null : session.taskHere?.();
+    const now = here ? session.action() : null;
+    if (otherWork(here, now)) find('otherWork', `${here} > ${now.act}${now.task ? ` (${now.task})` : ''}`);
+    // The same fail three times in a row with presses only.
+    for (const l of lines.slice(linesBefore)) {
+      if (!FAIL_KEY.test(l.key)) continue;
+      fail = failStep(fail, l.key, tappedAt, command);
+      if (fail.n >= 3) find('failLoop', l.text);
+    }
+    // A thing of an open riddle or work near the hero that the view does not draw.
+    {
+      const h = hero().position;
+      const open = new Set(query(st(), 'zone').filter((z) => z.zone.rule === 'trial' && !z.zone.done).map((z) => z.id.replace(/^zone:/, '')));
+      const things = query(st(), 'item', 'position').map((e) => ({
+        id: e.id,
+        entity: e,
+        // A fixed thing of a work can hide on purpose (the stem of the woodcutter after a cut: its
+        // pieces show in its place).
+        open: (String(e.item.kind).startsWith('pz') && Boolean(session.puzzleHere?.())) || (open.has(e.item.task) && !e.item.fixed),
+        held: Boolean(e.item.held || e.item.inHands || hero().hands?.holds === e.id),
+        near: Math.hypot(e.position.x - h.x, e.position.z - h.z) <= 24,
+      }));
+      for (const id of unseen(things)) find('unseenThing', id);
     }
     // The texts of the lines of this command.
     for (const l of lines.slice(linesBefore)) if (KEY_IN_TEXT.test(l.text)) find('keyInText', l.text);

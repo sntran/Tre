@@ -1,6 +1,6 @@
 // A check of a save before a play test (#174): the robot child plays 40 commands of the kind
-// "star" from a saved game and says where the star leads, so that a save of a play test starts at
-// the scene that it is for.
+// "star" from a saved game and says where the star leads, the goal of the quest strip, and the work
+// on the button (#183), so that a save of a play test starts at the scene that it is for.
 //   node tools/robot/scene.mjs <save> [--commands 40] [--night]
 // <save>: the text of a save of the game (src/core/save.js), or a scene of tests/stories/.
 import { readFileSync } from 'node:fs';
@@ -25,6 +25,10 @@ const profile = isScene ? null : deserialize(text);
 const out = await playScene(story, { kind: 'star', commands, night, profile, scene: file });
 const show = (w) => [
   `- map ${w.map}, hero at ${w.hero.join(', ')}, goal ${w.goal ?? '-'}`,
+  // The goal of the quest strip and the work that the button offers (#183): a save for a play
+  // test shows at once whether the child meets the work.
+  `- the strip: "${w.strip}"`,
+  `- the button: ${w.offer ? `${w.offer.act} ${w.offer.target ?? ''}${w.offer.task ? ` (${w.offer.task})` : ''}` : 'empty'}`,
   ...w.stars.map((m) => `- a star at ${m.at.join(', ')}${m.who ? ` (${m.who})` : ''}${m.thing ? ` (${m.thing})` : ''}${m.work ? ', the work' : ''}${m.rest ? ', the rest' : ''}${m.line ? `: "${m.line}"` : ''}`),
 ].join('\n');
 console.log(`# The scene of ${file}\n\n## At the start\n${show(out.start)}\n\n## After ${commands} commands\n${show(out.end)}\n\n## The last lines\n${out.heard.slice(-8).map((l) => `- "${l}"`).join('\n')}\n\n## The laws\n${report(out.findings)}`);

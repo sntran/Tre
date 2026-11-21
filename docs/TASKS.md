@@ -757,3 +757,19 @@ The long sweep at the end of #174 (440 plays, 536 s) found 30 things that are st
 - **No progress in an open work** (13). The stakes of the fisher (`trial-fisher`, `ferry-k`, `puzzle-ferry` at night): the robot does not reach the ring. The drum (`practice-mua-trong`, `practice-xom-ruong`): the robot does not keep the beat. The event of the cart opens in the ferry scenes, and the robot stays at the ferry.
 
 Some of these are limits of the robot (the beat, the plan of the riddle), and some are true dead ends for a child. Each one needs a look in a play before a change.
+
+### The laws of the dead ends of the children (#183)
+
+The children of the plays after #182 found dead ends that the laws of #174 did not look for. Five new laws (`LAWS` in `tools/robot/robot.mjs`), each with a test in `tests/robot.test.js`:
+
+- **lostPress:** a press while the button shows an act, and the act does not come. One press is enough. The session says why in its answer to a press (`why` of the event `press`): `settle` (the picture is younger than 0.6 s), `gone` (the act of the picture is not in reach), or `walk` (a press during a walk, and no act at the end of the walk). A "not now" of the button (`nope`) is an answer, not a lost press.
+- **otherWork:** while a work is open where the hero is (`taskHere()` of the session), the button offers the start of a raid, or a work of another task (`task` of the act of the button).
+- **failLoop:** the same line of a fail of a work three times in a row with no tap between.
+- **lineBeforeAct:** a line says to press or hold the big button now ("giữ nút", "bấm nút"), and 1 s after the line the button has no act of that kind. A sentence of a rule ("thì", "khi", "mỗi lần") or of a walk first ("…, rồi bấm nút") does not count.
+- **unseenThing:** a thing of an open riddle or work near the hero that the view does not draw (`drawable` in `src/world/figures.js`, the same rule as `src/render/figure3d.js`).
+
+Two new kinds of child: the `walker` presses one to three times during each walk after a tap, and the `slow` child counts as the counter but waits 3 s between the presses of a count.
+
+The short sweep plays the share after the raid of the soldiers (the dealer), the bridge (the presser), the forge at grade 3 (the presser), the full ferry riddle at grade 2, bà lang and the staffs with the walker, and the raid of the soldiers with the slow child. A case that breaks a law before its fix is a `todo` with the number of its issue (#184 to #191), and that issue turns the case on.
+
+`node tools/robot/scene.mjs <save>` also prints the goal of the quest strip and the work on the button at the start.
