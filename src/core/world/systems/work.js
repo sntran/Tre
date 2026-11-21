@@ -61,9 +61,12 @@ export const AIM_RISE = 0.45; // seconds: the mark of a slash goes up one half b
 export const aimAt = (t, reach) => Math.min(reach, 1 + Math.floor(Math.max(0, t - AIM_RISE) / AIM_RISE));
 const QUICK_SHOW = 1.5; // seconds: the mark of a quick tap stays at the first ring
 const MAT_MAX = 14; // the most rods on the mat of the teacher
-const SHARE_GAP = 5.2; // half blocks from a mat of the share to the next one
+// The mats lie one mat wide apart (#177: the mats touched, and the press put the sack on the mat
+// next to the one that the child wanted).
+const SHARE_GAP = 7; // half blocks from a mat of the share to the next one
 const SHARE_BACK = 3.2; // half blocks from the middle of a mat of the share to its friend
 const SHARE_MAT = 1.7; // half blocks from the middle of a mat of the share to its edge
+const SHARE_PILE = SHARE_MAT * 5 + 2.5; // half blocks from the middle of the pile to the middle of a mat
 const DEMO_WAIT = 0.8; // seconds: the smith quenches his demo piece this long after it turns hot
 const DEMO_NEXT = 1.6; // seconds: then the iron of the child comes on the anvil
 
@@ -417,18 +420,19 @@ export function setupTrial(world, def, level, env, opts = {}) {
     };
     const at = (c, u, v, a, b) => ({ x: c.x + u.x * a + v.x * b, z: c.z + u.z * a + v.z * b });
     const corners = [[0, 0], [SHARE_MAT, SHARE_MAT], [-SHARE_MAT, SHARE_MAT], [SHARE_MAT, -SHARE_MAT], [-SHARE_MAT, -SHARE_MAT]];
-    const clear = (q) => Math.hypot(q.x - pile.zone.x, q.z - pile.zone.z) > SHARE_MAT + 3.5;
+    // The pile lies at least two mats away from the nearest mat (#177).
+    const clear = (q) => Math.hypot(q.x - pile.zone.x, q.z - pile.zone.z) >= SHARE_PILE;
     const fits = (c, u, v) => def.who.every((_, i) => corners.every(([a, b]) => open(at(c, u, v, (i - 1) * SHARE_GAP + a, b))) && open(at(c, u, v, (i - 1) * SHARE_GAP, SHARE_BACK)) && clear(at(c, u, v, (i - 1) * SHARE_GAP, 0)));
     const rows = [];
     for (let b = -12; b <= 30; b += 1) {
       for (let o = -30; o <= 30; o += 1) {
         const c = pt(b, o);
-        const d = Math.hypot(b - 7, o);
+        const d = Math.hypot(b - 13, o);
         rows.push({ c, u: side, v: back, d }, { c, u: back, v: side, d: d + 0.5 }, { c, u: back, v: { x: -side.x, z: -side.z }, d: d + 0.5 });
       }
     }
     rows.sort((p, q) => p.d - q.d);
-    const row = rows.find((r) => fits(r.c, r.u, r.v)) ?? { c: pt(7, 0), u: side, v: back };
+    const row = rows.find((r) => fits(r.c, r.u, r.v)) ?? { c: pt(13, 0), u: side, v: back };
     // The mats lie SHARE_GAP half blocks apart, and each friend stands behind the mat: no figure
     // stands on a mat (#138: "Gióng is so big, he blocks the trays."). Gióng stands at the outer
     // side of his mat, out of the way between the pile and the mats (#167: he covered the view and
@@ -449,7 +453,8 @@ export function setupTrial(world, def, level, env, opts = {}) {
       // The Gióng who rides with the hero goes to his mat (#146: "there are two big guys with red
       // headbands now"): the zone keeps the place, and the work adds no second figure.
       getEntity(world, `zone:share-${who}`).zone.by = { x: by.x, y: by.y, z: by.z, facing: face };
-      if (who === 'giong' && !env.rider?.()) addEntity(world, { id: 'by:share-giong', keep: true, position: { ...by, facing: face }, look: 'giong-hero' });
+      // Gióng sits behind his mat (#177: standing, he was as tall as the screen over the mats).
+      if (who === 'giong' && !env.rider?.()) addEntity(world, { id: 'by:share-giong', keep: true, act: 'sit', position: { ...by, facing: face }, look: 'giong-hero' });
       const friend = friendOf(world);
       if (who === 'nghe' && friend) friend.follow.goal = { x: by.x, z: by.z, face };
     });

@@ -939,6 +939,8 @@
   "share.who.hero": "cháu",
   "share.who.nghe": "Nghé",
   "share.who.giong": "Gióng",
+  "share.put": "Chiếu của {who}: {n} bao.",
+  "share.put.one": "Chiếu của {who}: một bao.",
   "share.count": "{who} có {n} bao.",
   "share.count.none": "{who} chưa có bao nào.",
   "share.more": "Chiếu của {who} nhiều hơn.",

@@ -939,6 +939,8 @@
   "share.who.hero": "you",
   "share.who.nghe": "Nghé",
   "share.who.giong": "Gióng",
+  "share.put": "The mat of {who}: {n} sacks.",
+  "share.put.one": "The mat of {who}: one sack.",
   "share.count": "{who}: {n} sacks.",
   "share.count.none": "{who}: no sacks yet.",
   "share.more": "The mat of {who} has more.",

@@ -695,6 +695,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       else delete g.afoot;
       stepMounts();
     }
+    // He sits behind his mat at the share, so that he is not taller than the top of the view (#177).
+    const atMat = by && Math.hypot(g.position.x - by.x, g.position.z - by.z) < 4;
+    if (atMat && g.act !== 'sit') g.act = 'sit';
+    else if (!atMat && g.act === 'sit') delete g.act;
     // On the way to a place to find, Gióng leads (#142: "But where did big Gióng go?"): he rides in
     // front of the hero toward the next person of the way, in the view, and waits when the hero
     // stops. Else he rides behind the hero.
@@ -2113,6 +2117,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const z = wz.zone;
     // A tap on the place of a mat of the share says its count, as a tap on the mat does (#138).
     if (/^zone:share-/.test(wz.id) && !holding()) shareCount(wz.id);
+    // With a sack in the hands, a tap on a mat chooses it: it glows, and the hero walks to it (#177).
+    else if (/^zone:share-/.test(wz.id)) return chooseMat(wz.id);
     if (z.rule === 'line') {
       // The hero walks along the bank to the point of the tap (#115: a tap on the ring turned the
       // hero only, and the next stake went where the hero stood).
@@ -3675,6 +3681,29 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     emit({ type: 'open', screen: 'callout', id: shareVoice(), textKey: n ? 'share.count' : 'share.count.none', params: { who: { key: SHARE_WHO[who] }, n: { key: `num.${n}` } } });
     emit({ type: 'glowSeq', ids: [`mat:share-${who}`] });
   }
+  // With a sack in the hands, a tap on a mat chooses it (#177): the mat glows, and the hero walks to
+  // the side of the mat; the press then puts the sack on it.
+  function chooseMat(zoneId) {
+    const wz = zoneId ? getEntity(state, zoneId) : null;
+    if (!wz?.zone || wz.zone.rule !== 'share') return false;
+    emit({ type: 'glowSeq', ids: [zoneId.replace(/^zone:/, 'mat:')] });
+    const hp = hero().position;
+    const p = nearIn(wz, hp);
+    if (distHb(hp, p) > REACH) goTo({ x: wz.zone.x, z: wz.zone.z }, zoneId, null, standOf(wz));
+    else chosen = { id: zoneId, along: null };
+    return true;
+  }
+  // A put on a mat of the share: the owner of the mat says its count (#177: "No word after a put.").
+  // "Chiếu của Gióng: hai bao."
+  function sharePut(ev) {
+    if (ev.id !== 'hero' || !/^share-/.test(ev.zone)) return;
+    const who = ev.zone.slice(6);
+    const z = zoneOf(ev.zone)?.zone;
+    if (!z || !SHARE_WHO[who]) return;
+    const owner = who === 'nghe' ? getEntity(state, 'friend:nghe') : who === 'giong' ? (personOf('giong-hero') ?? getEntity(state, 'by:share-giong')) : null;
+    const id = owner && !owner.hidden ? owner.id : shareVoice();
+    emit({ type: 'open', screen: 'callout', id, textKey: z.items.length === 1 ? 'share.put.one' : 'share.put', params: { who: { key: SHARE_WHO[who] }, n: { key: `num.${Math.min(150, z.items.length)}` } } });
+  }
   // A share that is not equal: which mat has more (#138), and what to do next (#167: a boy of
   // grade 2 heard "Chiếu của Nghé nhiều hơn." again and again, and carried sacks for about 100
   // commands; feedback helps when it says where to go next, Hattie and Timperley 2007): a mat with
@@ -4968,6 +4997,33 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   const TAKE_BACK = new Set(['bundle', 'basket', 'line', 'exact', 'share', 'spots', 'hearth', 'boat', 'desk', 'leaf', 'bandrow']);
   // The point in front of the hero (half blocks), for the places on a line.
   const frontOf = (hp, d = 2) => ({ x: hp.x + Math.sin(hp.facing ?? 0) * d, z: hp.z + Math.cos(hp.facing ?? 0) * d });
+  // The zone of a mat of the share that an id names (the mat, its zone, or a sack on it), or null.
+  const shareMatOf = (id) => {
+    if (!id) return null;
+    const m = /^(?:mat|zone):share-(\w+)$/.exec(id);
+    if (m) return `zone:share-${m[1]}`;
+    const z = getEntity(state, id)?.item?.zone;
+    return z && /^share-/.test(z) ? `zone:${z}` : null;
+  };
+  // The mat of the share that the hero faces: of the mats in reach, the one nearest to the line of
+  // the look of the hero (#177).
+  function facedMat(hp) {
+    const f = { x: Math.sin(hp.facing ?? 0), z: Math.cos(hp.facing ?? 0) };
+    let best = null;
+    for (const z of query(state, 'zone')) {
+      if (z.zone.rule !== 'share') continue;
+      const p = nearIn(z, hp);
+      const d = distHb(hp, p);
+      if (d > REACH + 2) continue;
+      const dx = z.zone.x - hp.x;
+      const dz = z.zone.z - hp.z;
+      const n = Math.hypot(dx, dz) || 1;
+      const turn = Math.acos(Math.max(-1, Math.min(1, (dx * f.x + dz * f.z) / n)));
+      const score = turn + d * 0.05;
+      if (!best || score < best.score) best = { id: z.id, score };
+    }
+    return best?.id ?? null;
+  }
 
   // All that the action button can act on now around the hero, with the distance of each: the
   // finish of a task at its person, the acts of things, the hands (pick up, put, take back), a
@@ -5432,6 +5488,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         // After a tap on a desk, the put goes to that desk only: out of reach, the press walks to it
         // (#116: the desks stand close, and the put went to the desk next to the tapped one).
         if (zone.rule === 'desk' && zoneOf(chosen?.id?.replace(/^zone:/, ''))?.zone.rule === 'desk' && chosen.id !== z.id) continue;
+        // The share (#177: "I put them on Gióng's mat and they jumped to Nghé's mat."): after a tap
+        // on a mat, the put goes to that mat (it glows, and the ghost of the sack is on it); with no
+        // tap, to the mat that the hero faces.
+        if (zone.rule === 'share') {
+          const mat = shareMatOf(chosen?.id);
+          if (mat ? mat !== z.id : facedMat(hp) !== z.id) continue;
+          add({ act: 'put', icon: 'hand-put', target: z.id, keys: [z.id, `mat:share-${zone.who}`, ...zone.items], at: nearIn(z, hp), work, rank: 0, ghost: { look: held.look, x: zone.x, y: zone.y, z: zone.z, facing: 0 }, run: () => put(null) }, REACH + 2);
+          continue;
+        }
         // A tap on a thing on the place (the sticks on the wood pile) makes the place the target too.
         // A put on a desk of the share walks the hero to the desk (#116: a put from three cells away
         // with no walk, and the child did not know where the rod went).
@@ -5945,7 +6010,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       }
       return;
     }
-    if (/^(mat|zone):share-/.test(String(tapped ?? target.zone ?? ''))) shareCount(tapped ?? target.zone);
+    if (/^(mat|zone):share-/.test(String(tapped ?? target.zone ?? ''))) {
+      if (!holding()) shareCount(tapped ?? target.zone);
+      else if (chooseMat(shareMatOf(tapped ?? target.zone))) return;
+    }
     // A row of the guess at the bridge: the hero walks to its foot on the bank, and it is the target
     // (the action button chooses it).
     if (target.guess) {
@@ -6986,6 +7054,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         // A put after her count of the extra: the child tries again, and the give is free (#160).
         if (ev.zone === 'basket' && trialZone('healer')?.zone.extraTold) trialZone('healer').zone.putSince = true;
         deskPut(ev);
+        sharePut(ev);
       }
       if (ev.type === 'arrived' || ev.type === 'stuck') {
         const fn = arrivals.get(ev.token);
