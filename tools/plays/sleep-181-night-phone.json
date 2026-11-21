@@ -1,0 +1,43 @@
+{
+ "about": "#181 at night: by the river with a plank of the bridge in the hands, the button is the sleep; a press puts the plank down, and the hero sleeps to the morning.",
+ "start": "?story=raid-river-night",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "(() => { const s = tre.activeVillage.state(); const h = s.entities.find((e) => e.id === 'hero'); const p = s.entities.find((e) => e.item?.kind === 'plank' && !e.item.held); h.hands.holds = p.id; p.item.held = 'hero'; p.hidden = true; return p.id; })()"
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "document.querySelector('.act-btn')?.dataset.act"
+  },
+  {
+   "shot": "1-at-night-with-a-plank-the-button-is-the-sleep"
+  },
+  {
+   "press": true,
+   "after": 6
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "2-the-morning"
+  }
+ ]
+}

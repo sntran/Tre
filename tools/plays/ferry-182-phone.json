@@ -1,0 +1,138 @@
+{
+ "about": "#182: K, the ferry riddle: the dog and the rice; the button at the boat is the crossing, also with nothing in the hands; presses end the riddle in a win.",
+ "start": "?story=ferry-k",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "wait": 10
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-4).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "1-the-easy-riddle-at-k"
+  },
+  {
+   "press": true,
+   "after": 2.5,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'puzzle.ferry.done')"
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry.state === 'wait'",
+   "timeout": 30
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 2.5,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'puzzle.ferry.done')"
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry.state === 'wait'",
+   "timeout": 30
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "document.querySelector('.act-btn')?.dataset.act"
+  },
+  {
+   "shot": "2-on-the-far-bank-the-button-is-the-boat"
+  },
+  {
+   "press": true,
+   "after": 2.5,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'puzzle.ferry.done')"
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry.state === 'wait'",
+   "timeout": 30
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 2.5,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'puzzle.ferry.done')"
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry.state === 'wait'",
+   "timeout": 30
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 2.5,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'puzzle.ferry.done')"
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry.state === 'wait'",
+   "timeout": 30
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 2.5,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'puzzle.ferry.done')"
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry.state === 'wait'",
+   "timeout": 30
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 2.5,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'puzzle.ferry.done')"
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry.state === 'wait'",
+   "timeout": 30
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 2.5,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'puzzle.ferry.done')"
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry.state === 'wait'",
+   "timeout": 30
+  },
+  {
+   "wait": 1
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "3-the-riddle-ends-in-a-win"
+  }
+ ]
+}

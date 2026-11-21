@@ -1,0 +1,106 @@
+{
+ "about": "#176: grade 1, the bamboo staffs: the first talk in three short lines; the show plays one time; during the hold only the count of the child plays, and the cut is at the last number.",
+ "start": "?story=staffs-grade1",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "woodcutter"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 90
+  },
+  {
+   "read": 1,
+   "after": 1
+  },
+  {
+   "shot": "1-the-first-talk-in-short-lines"
+  },
+  {
+   "read": 10
+  },
+  {
+   "wait": 2
+  },
+  {
+   "walk": {
+    "thing": "culm:staffs:0"
+   },
+   "taps": 14,
+   "near": 90
+  },
+  {
+   "tap": {
+    "thing": "culm:staffs:0"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => /^mentor\\.first\\.you/.test(x.key ?? ''))",
+   "timeout": 120
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => e.script)",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "thing": "culm:staffs:0"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 1.2
+  },
+  {
+   "hold": {
+    "until": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-staffs')?.zone.aim?.at ?? 0) >= 4",
+    "timeout": 20
+   },
+   "shot": "2-in-the-hold-only-the-count-of-the-child"
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-6).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "3-the-cut-at-the-last-number"
+  }
+ ]
+}

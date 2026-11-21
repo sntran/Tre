@@ -1,0 +1,55 @@
+{
+ "about": "#180: grade 2 on the way to Trâu Sơn: on Nghé beside Gióng the button stays the get off, and a tap on Gióng gives his talk; the hero is not an outline behind him.",
+ "start": "?story=way-trau-son",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "wait": 3
+  },
+  {
+   "tap": {
+    "thingExpr": "'friend:nghe'"
+   },
+   "after": 0.5
+  },
+  {
+   "press": true,
+   "after": 2.5
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-2).map((x) => [x.key, x.text]))"
+  },
+  {
+   "print": "document.querySelector('.act-btn')?.dataset.act"
+  },
+  {
+   "shot": "1-on-nghe-beside-giong-the-button-is-the-get-off"
+  },
+  {
+   "tap": {
+    "person": "giong-hero"
+   },
+   "after": 1.2
+  },
+  {
+   "print": "document.querySelector('.act-btn')?.dataset.act"
+  },
+  {
+   "shot": "2-a-tap-on-giong-gives-his-talk"
+  }
+ ]
+}
