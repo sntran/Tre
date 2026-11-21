@@ -1,0 +1,82 @@
+name: World measure
+
+# A measure of the factory of World (World docs/factory.md, "The memory
+# of the VM"): an order of this project, with the ID token of this job,
+# as World docs/projects.md tells. Three projects ask at the same time,
+# 20 s apart, in one construction shift. The job places the order, gets
+# its parts list, asks for all its parts at one time, and asks again on
+# 202 and 503. It prints the time of each step and of each part. It uses
+# no secret. This branch is for the measure only: it is not merged, and
+# it goes after the measure.
+on:
+  push:
+    branches: [ci/world-three-projects]
+
+permissions:
+  contents: read
+  # The ID token of the job proves the project to the factory.
+  id-token: write
+
+jobs:
+  request:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      START_AT: "2026-11-21T08:33:00Z"
+      OFFSET: "20"
+      # The order (or the edits of an order of EDIT_OF), with "RUN" for a
+      # number of VARY plus a part of the id of the run.
+      ORDER: '{"blueprint": "village_house", "options": {"bays": 3, "bay": "RUN"}}'
+      EDIT_OF: ""
+      VARY: "2.3"
+      LEVEL: mid
+      WORLD_SHIFT_HOURS: "0.5"
+    steps:
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Ask the factory
+        run: |
+          node --input-type=module <<'EOF' | tee -a "$GITHUB_STEP_SUMMARY"
+          const base = 'https://world.mkfifo.workers.dev';
+          const wait = (ms) => new Promise((done) => setTimeout(done, ms));
+          async function token() {
+            const url = `${process.env.ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${encodeURIComponent('https://world.mkfifo.com')}`;
+            const r = await fetch(url, { headers: { authorization: `bearer ${process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN}` } });
+            return (await r.json()).value;
+          }
+          const headers = async () => ({ authorization: `Bearer ${await token()}`, 'content-type': 'application/json', 'x-world-shift-hours': process.env.WORLD_SHIFT_HOURS });
+          // (A new value for each run, so that the parts are new.)
+          const vary = (Number(process.env.VARY) + (Number(process.env.GITHUB_RUN_ID) % 89) / 1000).toFixed(3);
+          const order = JSON.parse(process.env.ORDER.replaceAll('"RUN"', vary));
+          const at = Date.parse(process.env.START_AT) + Number(process.env.OFFSET) * 1000;
+          await wait(Math.max(0, at - Date.now()));
+          const start = Date.now();
+          const s = () => ((Date.now() - start) / 1000).toFixed(1);
+          console.log(`The request starts at ${new Date(start).toISOString()}.\n`);
+          const until = start + 45 * 60_000;
+          async function ask(path, init = {}) {
+            for (let pause = 5; ; pause = Math.min(pause * 2, 60)) {
+              const r = await fetch(`${base}${path}`, { ...init, headers: await headers() }).catch(() => null);
+              if (r && r.status === 200) return r;
+              if (r && r.status < 500 && r.status !== 202) throw new Error(`${path}: ${r.status} ${await r.text()}`);
+              const after = Number(r?.headers.get('retry-after') ?? pause);
+              if (Date.now() + after * 1000 > until) throw new Error(`${path}: no answer in the limit of time`);
+              await r?.arrayBuffer();
+              await wait(after * 1000);
+            }
+          }
+          const placed = process.env.EDIT_OF
+            ? await (await ask(`/orders/${process.env.EDIT_OF}/edits`, { method: 'POST', body: JSON.stringify({ edits: order }) })).json()
+            : await (await ask('/orders', { method: 'POST', body: JSON.stringify(order) })).json();
+          console.log(`| Step | Time (s) |\n|---|---|\n| The order ${placed.hash} | ${s()} |`);
+          const list = await (await ask(`/o/${placed.hash}.${process.env.LEVEL}.elements.json`)).json();
+          console.log(`| The parts list (${list.parts.length} parts) | ${s()} |`);
+          const times = await Promise.all(list.parts.map(async (p) => {
+            await (await ask(p.url)).arrayBuffer();
+            return [p.key, s()];
+          }));
+          for (const [key, t] of times) console.log(`| The part ${key} | ${t} |`);
+          console.log(`| The last part | ${s()} |`);
+          EOF
