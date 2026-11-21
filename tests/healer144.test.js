@@ -128,13 +128,13 @@ test('a press next to her while she lays out the doses never puts them back befo
   h.press(0.5);
   const tz = h.zone('trial-healer');
   // While she lays out: presses.
-  for (let i = 0; i < 6 && !h.said.some((l) => l.key === 'healer.dose.lack'); i++) {
+  for (let i = 0; i < 6 && !h.said.some((l) => l.key === 'healer.dose.short'); i++) {
     const a = h.session.action();
     assert.notEqual(a?.act, 'talk', 'no talk while she lays out');
     h.press(1);
   }
   h.run(20);
-  assert.ok(h.said.some((l) => l.key === 'healer.dose.lack'), `her count: ${h.said.map((l) => l.key).join(', ')}`);
+  assert.ok(h.said.some((l) => l.key === 'healer.dose.short'), `her count: ${h.said.map((l) => l.key).join(', ')}`);
   assert.ok(tz, 'the trial is open');
 });
 

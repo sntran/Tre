@@ -1683,7 +1683,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return;
     }
     const line = levelLine(view.speaker, view.textKey);
-    openScreen(d, { id: d.id, mark: view.mark, speaker: view.speaker, mood: view.mood ?? 'calm', textKey: line.key, params: { ...trialWords(view.speaker), ...view.params }, choices: view.choices.map((c) => c.textKey), choiceIcons: view.choices.map((c) => c.icon ?? null), calling: view.calling, word: view.word, faces: view.faces, ...(view.marks ? { marks: true } : {}) });
+    openScreen(d, { id: d.id, mark: view.mark, speaker: view.speaker, mood: view.mood ?? 'calm', textKey: line.key, params: { ...trialWords(view.speaker), ...view.params }, choices: view.choices.map((c) => c.textKey), choiceIcons: view.choices.map((c) => c.icon ?? null), calling: view.calling, word: line.word ?? view.word, faces: view.faces, ...(view.marks ? { marks: true } : {}) });
     showNames(d, view.speaker, line.names ?? view.names);
   }
   // The two ends of a place: the ends of a gap of the bridge, or the middles of the short sides of
@@ -1876,7 +1876,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const z = trialZone(def.id)?.zone;
     const level = z?.level ?? (practice?.trial === def.id ? practice.level : trialLevelOf(def));
     const line = taskOf(def, level).talk?.[key] ?? key;
-    return typeof line === 'string' ? { key: line, names: null } : { key: line.key, names: line.names.map((n) => (typeof n === 'string' ? { id: n } : n)) };
+    // A line of a level can have the card of a word (#178: "thang" with the first line that uses it).
+    return typeof line === 'string' ? { key: line, names: null } : { key: line.key, names: (line.names ?? []).map((n) => (typeof n === 'string' ? { id: n } : n)), word: line.word ?? null };
   }
   // The stand point beside a rect of work (half blocks), or the stand itself when it is not in front
   // of the work. The camera is toward (sin, cos) of viewAz; the side of the view is (cos, -sin).
@@ -2165,7 +2166,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const doses = MODEL_DOSES;
     const list = Object.entries(counts).map(([k, n]) => (n / doses === 1 ? { key: `healer.model.kind.${k}.one` } : { key: `healer.model.kind.${k}`, params: { n: { key: `num.${Math.round(n / doses)}` } } }));
     if (!list.length) return;
-    emit({ type: 'open', screen: 'callout', id: healer.id, textKey: 'healer.model.count', params: { k: { key: `num.${doses}` }, list } });
+    // One pack of the model, as the child sees it (#178): "Gói này: hai bó ngải cứu, một bó tía tô,
+    // ba bó rau má."
+    emit({ type: 'open', screen: 'callout', id: healer.id, textKey: 'healer.model.pack', params: { list } });
     const leaf = zoneOf('leaf-0');
     if (leaf?.zone.items.length) setCue([...leaf.zone.items]);
   }
@@ -6672,6 +6675,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const address = ref ? data.npcs?.npcs?.[ref]?.address : null;
     return address && data.mentors?.addressLines?.[address]?.includes(key) ? `${key}.${address}` : key;
   }
+  const yourTurn = new Set(); // the tasks where "Giờ đến lượt cháu." came
   function worldEvent(ev) {
     // Over the river: the far walk has no ferry to keep any more.
     if (ev.type === 'ferried' && (ev.riders ?? []).includes('hero')) farPlan = null;
@@ -6692,6 +6696,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // While the knife is down at the staffs, no line of a person: the count of the rings is the only
     // voice (#176).
     if (ev.type === 'call' && holdAct?.act === 'slash') return;
+    // "Giờ đến lượt cháu." comes one time in a task, and only before the first put of the child
+    // (#178: it came after the third put, and again at the next tap).
+    if (ev.type === 'call' && ev.key === 'mentor.first.you') {
+      const task = mentoring.taskOfPerson(ev.id);
+      if (task && (childPut.has(task) || yourTurn.has(task))) return;
+      if (task) yourTurn.add(task);
+    }
     if (ev.type === 'call' && !busy) emit({ type: 'open', screen: 'callout', id: ev.id, textKey: addressed(ev.id, ev.key), params: ev.params ?? {}, ...(ev.happened ? { happened: true } : {}), ...(ev.asked ? { asked: true } : {}) });
     // The mentors read the commits (before the learner takes them), the plank too long, and the
     // actions of the hands.

@@ -1492,6 +1492,12 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   // child onto leaves beside the basket, one dose on each leaf, as far as they go, and says what the
   // last dose lacks or what is left over. The leaves and the bunches on them go at the end of the
   // count: the bunches are back in the basket.
+  const lackWords = (d, kind, missing, all) => ({
+    n: { key: `ord.${Math.min(6, d + 1)}` },
+    m: { key: `num.${Math.min(150, missing)}` },
+    all: { key: `num.${Math.min(150, all)}` },
+    herb: { key: `herb.name.${kind}` },
+  });
   function doseSteps(task, s, t) {
     const plan = task.tz.zone.plan;
     const z = task.place.zone;
@@ -1506,21 +1512,25 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       if (!full && kinds.every((k) => pool[k] === 0)) {
         s.point(t, at, 1.2);
         s.mark(t, at, 2);
-        s.say(t + 0.1, 'healer.dose.lack', { n: { key: `ord.${Math.min(6, d + 1)}` }, herb: { key: `herb.name.${kinds[0]}` } });
-        return t + 2.8;
+        s.say(t + 0.1, 'healer.dose.short', lackWords(d, kinds[0], plan.recipe[kinds[0]], plan.recipe[kinds[0]]));
+        return t + 3.4;
       }
       s.steps.push({ at: t, spawn: { look: 'herb-leaf', x: at.x, z: at.z, facing: 0 } });
       let i = 0;
+      const laid = {};
       for (const k of kinds) {
         const n = Math.min(pool[k], plan.recipe[k]);
+        laid[k] = n;
         for (let j = 0; j < n; j++, i++) s.steps.push({ at: t + 0.2 + i * 0.12, spawn: { look: `herb-${k}`, x: at.x - 0.8 + (i % 5) * 0.4, z: at.z - 0.3 + Math.floor(i / 5) * 0.4, facing: 0 } });
         pool[k] -= n;
       }
       s.point(t, at, 1.2);
       if (!full) {
-        const lack = kinds.find((k) => itemsOf(task.place).filter((e) => e.item.kind === `herb-${k}`).length < plan.recipe[k] * (d + 1));
-        s.say(t + 0.6, 'healer.dose.lack', { n: { key: `ord.${Math.min(6, d + 1)}` }, herb: { key: `herb.name.${lack}` } });
-        return t + 3.4;
+        // The whole pack (#178: "còn thiếu rau má" said what was wrong, not how many bunches a pack
+        // needs): "Thang thứ nhất còn thiếu một bó rau má. Mỗi thang có ba bó rau má."
+        const lack = kinds.find((k) => laid[k] < plan.recipe[k]) ?? kinds[0];
+        s.say(t + 0.6, 'healer.dose.short', lackWords(d, lack, plan.recipe[lack] - laid[lack], plan.recipe[lack]));
+        return t + 4;
       }
       s.say(t + 0.5, d === 0 ? 'count.dose.one' : 'count.dose', { n: { key: `num.${d + 1}` } });
       t += 1.6;

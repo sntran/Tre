@@ -59,9 +59,9 @@ test('the model basket stands away from the basket of the healer and the beds, a
   // No bunch into the basket of the child, also not for a moment: the deal shows the take and the put.
   assert.ok(!h.puts.some((p) => p.zone === 'basket'), JSON.stringify(h.puts));
   assert.ok(h.said.includes('healer.model.leaf'), h.said.join(', '));
-  // A tap on the model: the healer counts it by kinds.
+  // A tap on the model: the healer counts one pack by kinds (#178).
   h.tapThing(h.zone('leaf-0').items[0]);
-  assert.ok(h.said.includes('healer.model.count'), h.said.join(', '));
+  assert.ok(h.said.includes('healer.model.pack'), h.said.join(', '));
 });
 
 test('at the levels of doses, the model, and fractions, a wave never puts a bunch into the basket of the child', async () => {
@@ -95,7 +95,8 @@ test('the check of a wrong basket at grade 4 lays it in doses and says what the 
   h.press();
   h.run(25);
   assert.ok(h.said.includes('healer.dose.lay'), h.said.join(', '));
-  assert.ok(h.said.includes('healer.dose.lack'), h.said.join(', '));
+  // The line says the whole pack (#178).
+  assert.ok(h.said.includes('healer.dose.short'), h.said.join(', '));
 });
 
 test('a tap on another bed with a bunch in the hands puts the bunch back on its own bed', async () => {

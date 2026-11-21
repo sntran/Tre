@@ -93,12 +93,11 @@ test('a tap and a press on a bunch of the model never move it, and the healer co
   assert.deepEqual(where(), before);
   assert.ok(!h.puts.some((p) => p.by === 'hero' && model.some((e) => e.id === p.item)), JSON.stringify(h.puts.filter((p) => p.by === 'hero')));
   assert.ok(!getEntity(h.session.state, 'hero').hands?.holds, 'nothing in the hands');
-  // The count: two doses, and one dose of the recipe.
+  // The count of one pack: one dose of the recipe (#178: "Gói này: …").
   const plan = getEntity(h.session.state, 'zone:healer')?.zone.plan ?? query(h.session.state, 'zone').find((z) => z.zone.plan?.recipe)?.zone.plan;
-  const counts = h.said.filter((x) => x.key === 'healer.model.count');
+  const counts = h.said.filter((x) => x.key === 'healer.model.pack');
   assert.ok(counts.length >= 1, h.said.map((x) => x.key).join(', '));
   for (const c of counts) {
-    assert.deepEqual(c.params.k, { key: 'num.2' });
     const each = Object.fromEntries(c.params.list.map((x) => [x.key.replace(/^healer\.model\.kind\.|\.one$/g, ''), x.params?.n.key ?? 'num.1']));
     assert.deepEqual(each, Object.fromEntries(Object.entries(plan.recipe).map(([k, n]) => [k, `num.${n}`])));
   }

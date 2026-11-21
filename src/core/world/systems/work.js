@@ -682,8 +682,9 @@ export const DESK_STEP = 3.2;
 export const MODEL_ROOM = 2;
 // The leaves of the model (half blocks): the size of a leaf, the gap between two bunches on it, and
 // the place of the first leaf and of the next from the middle of the group.
-export const LEAF = Object.freeze({ w: 3.8, d: 3.0, gap: 1.0, first: 1.4, step: 4.4 });
-const MODEL_MAT_X = 1.7; // the middle of the mat of the model from the middle of the group
+// A leaf is one pack of the model, at least 60 points wide on a phone (#178).
+export const LEAF = Object.freeze({ w: 5.0, d: 3.6, gap: 1.0, first: 1.7, step: 5.6 });
+const MODEL_MAT_X = 2.4; // the middle of the mat of the model from the middle of the group
 export function modelSpot(basket, env, avoid = []) {
   const free = (p) => {
     const box = { x0: p.x - 5.6, x1: p.x + LEAF.first + LEAF.step + LEAF.w / 2 + 0.6, z0: p.z - LEAF.d / 2 - 0.6, z1: p.z + LEAF.d / 2 + 0.6 };
@@ -691,9 +692,10 @@ export function modelSpot(basket, env, avoid = []) {
     return !avoid.some((a) => a.x > box.x0 - MODEL_ROOM && a.x < box.x1 + MODEL_ROOM && a.z > box.z0 - MODEL_ROOM && a.z < box.z1 + MODEL_ROOM);
   };
   const spots = [
-    ...[0, 3, 6, 9].map((d) => ({ x: basket.x - 9 - d, z: basket.z + 0.6 })),
+    // Beside the basket of the child first (#178: the model was far at the left of the view).
+    ...[0, 2, 5].map((d) => ({ x: basket.x + 3 * BASKET_PART + 6.2 + d, z: basket.z + 0.6 })),
+    ...[0, 2, 5].map((d) => ({ x: basket.x - 10.5 - d, z: basket.z + 0.6 })),
     ...[6, 8].map((d) => ({ x: basket.x + 1, z: basket.z + d })),
-    ...[7, 9, 11].map((d) => ({ x: basket.x + 3 * BASKET_PART + d, z: basket.z + 0.6 })),
   ];
   return spots.find(free) ?? { x: basket.x - 4.2, z: basket.z + 1.8 };
 }

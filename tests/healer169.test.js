@@ -50,6 +50,6 @@ for (const grade of [1, 4]) {
 }
 
 test('the line of the give says the tap', () => {
-  assert.equal(vi['mentor.healer.give'], 'Cháu chạm vào bà, rồi bấm nút lớn: bà nhận giỏ.');
+  assert.equal(vi['mentor.healer.give'], 'Cháu chạm vào bà, rồi bấm nút để đưa giỏ.');
   assert.equal(vi['mentor.healer.next'], 'Giỏ đủ rồi. Cháu chạm vào bà để đưa giỏ nhé.');
 });
