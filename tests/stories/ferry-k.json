@@ -1,0 +1,34 @@
+{
+  "name": "ferry-k",
+  "about": {
+    "vi": "Mẫu giáo: người khách ở bến đò có con chó và bao gạo, hai thứ không đánh nhau. Em chở từng thứ một, và đi đò về không chở gì.",
+    "en": "K: a traveler at the boat with a dog and a sack of rice, two things that do not fight. The child takes one thing on each trip, and comes back with nothing."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 0,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true,
+      "prologue.started": true
+    }
+  },
+  "clock": 13660,
+  "at": [
+    "phu-dong",
+    3,
+    62
+  ],
+  "steps": [
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "textKey": "puzzle.ferry.easy.2"
+        },
+        "timeout": 30
+      }
+    }
+  ]
+}
