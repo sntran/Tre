@@ -2985,6 +2985,21 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // The line of the star of rest: why the child rests ("Lính quân Ân rút rồi. Sáng mai chúng quay
   // lại."), or the line of the night.
   const restLine = (rest) => (rest?.raid ? `star.rest.${rest.raid}` : 'star.rest.night');
+  // The thing in the hands before a sleep (#181): a thing of a work back to its heap, a thing of the
+  // way (travels) stays in the hands, any other thing on the ground in front of the hero.
+  function putDownToSleep(thing) {
+    if (!thing?.item || thing.item.travels) return;
+    const h = hero();
+    if (thing.item.home) {
+      h.hands.holds = null;
+      delete h.carry;
+      thing.item.held = null;
+      thing.hidden = false;
+      thing.position = { ...h.position };
+      if (backHome(state, thing)) return;
+    }
+    worldCommand(state, { type: 'drop', id: 'hero' });
+  }
   function sleep() {
     const from = state.clock.minutes;
     state.clock.minutes = nextDawn(from);
@@ -5235,6 +5250,20 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (nghe && !raidOn() && !taskOn()) add({ act: 'ride', icon: 'ride', target: nghe.id, at: nghe.position, rank: 6, run: () => worldCommand(state, { type: 'ride', id: 'hero', mount: nghe.id }) }, REACH + 2);
       if (!out.some((c) => !WORKLESS.has(c.act)) && !far.length) for (const c of laterFin) add(c, REACH + 3);
       return out;
+    }
+    // At night with a thing in the hands, the sleep is the first act too (#181: with a plank of the
+    // bridge in the hands, the star of rest led to the place of rest, and the button was empty
+    // there): the hero puts the thing down by itself and sleeps. A thing of a work goes back to its
+    // heap; a thing of the way (the rest of a share) stays in the hands.
+    const restHere = () => {
+      const spot = restSpot();
+      return Math.hypot(spot.x * 2 - hp.x, spot.y * 2 - hp.z) <= REST_REACH;
+    };
+    if (!tappedPerson() && (sleepNow() || (darkNow() && !raidOn() && !practice && !growing && restNow() && restHere()))) {
+      add({ act: 'sleep', icon: 'mat', target: 'hero', at: { ...hp }, rank: SLEEP_RANK, run: () => {
+        putDownToSleep(held);
+        sleep();
+      } }, REACH);
     }
     // A thing in the hands: the places that take it (a ghost shows where it goes on a line).
     const front = frontOf(hp);
