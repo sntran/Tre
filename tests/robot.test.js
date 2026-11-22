@@ -24,7 +24,7 @@ for (const night of [false, true]) {
   if (!night) CASES.push({ name: 'raid-soldiers', kind: 'dealer', night, steps: 26, commands: 80 });
   // A child who counts slowly: the count still adds up (#186).
   CASES.push({ name: 'raid-soldiers', kind: 'slow', night });
-  CASES.push({ name: 'bridge-mashing', kind: 'presser', night, todo: night ? null : '#191: the loop of the plank' });
+  CASES.push({ name: 'bridge-mashing', kind: 'presser', night });
   CASES.push({ name: 'forge-horse', kind: 'presser', night, grade: 3 });
   // At night the robot leaves the riddle for the stakes of the fisher and does not reach the ring
   // there: a limit of the robot (#174), not of the riddle.

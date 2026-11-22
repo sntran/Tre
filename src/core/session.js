@@ -4736,7 +4736,31 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // pile chooses another length.
   function wantSize() {
     if (!lastPick || !openSpan(lastPick.task)) return null;
+    // After the plank that did not fit went back on the pile, the next press takes a plank of a
+    // length that did not go at that place yet (#191: the press put the same plank on the same gap,
+    // eight times).
+    if (otherThan) return otherSize(otherThan) ?? lastPick.size ?? null;
     return lastPick.size ?? null;
+  }
+  // The plank that the child took back from a gap where no plank fits ({ id, size, key }), and then
+  // the place in the gap where the next press takes a plank of another length (#191). The lengths
+  // that left no fit, for each place of each gap ('gap:length of the planks before').
+  let stuckBack = null;
+  let otherThan = null;
+  let backPlank = null;
+  const triedAt = new Map();
+  const spanBefore = (zone, id) => zone.items.filter((x) => x !== id).reduce((a, x) => a + (getEntity(state, x)?.item.size ?? 0), 0);
+  // The length for the next press at that place: the longest of the pile that is shorter than the
+  // last length and did not go there yet, or else the shortest that is longer. Null when each
+  // length of the pile went there: then the plank before is the plank to change.
+  function otherSize({ key, task, size }) {
+    const tried = triedAt.get(key) ?? new Set();
+    const sizes = query(state, 'item').filter((e) => e.item.task === task && !e.item.held && zoneOf(e.item.zone)?.zone.rule === 'pile').map((e) => e.item.size).filter((n) => !tried.has(n));
+    const shorter = sizes.filter((n) => n < size);
+    const longer = sizes.filter((n) => n > size);
+    if (shorter.length) return Math.max(...shorter);
+    if (longer.length) return Math.min(...longer);
+    return null;
   }
   // The tasks whose kind of thing only a tap changes: when the bed of that kind is empty, a press
   // takes nothing (#63). At the other tasks, a press takes another kind when the heap has no more.
@@ -5475,9 +5499,21 @@ export function createSession({ data, profile, learner = () => null, log = () =>
           if (!canTake(zone.zone, e.id)) continue;
           // The last plank comes back only after a tap on it: a press never undoes a put (#47, #54);
           // or when no plank of the pile fits the rest of the gap and the last plank glows (#90).
-          const stuck = zone.zone.stuck === e.id;
+          const stuck = zone.zone.stuck === e.id || backPlank === e.id;
           if (chosen?.id !== e.id && !stuck) continue;
-          add({ act: 'pick', icon: 'hand-pick', target: e.id, keys: [e.id, zone.id], at: zone.position, rank: stuck ? 2 : 1, run: () => worldCommand(state, { type: 'pick', id: 'hero', item: e.id }) }, REACH);
+          add({ act: 'pick', icon: 'hand-pick', target: e.id, keys: [e.id, zone.id], at: zone.position, rank: stuck ? 2 : 1, ...(backPlank === e.id ? { work: true } : {}), run: () => {
+            if (stuck) {
+              const key = `${zone.id}:${spanBefore(zone.zone, e.id)}`;
+              if (!triedAt.has(key)) triedAt.set(key, new Set());
+              triedAt.get(key).add(e.item.size);
+              // The places after it start again.
+              const at = spanBefore(zone.zone, e.id);
+              for (const k of [...triedAt.keys()]) if (k.startsWith(`${zone.id}:`) && Number(k.slice(zone.id.length + 1)) > at) triedAt.delete(k);
+              stuckBack = { id: e.id, size: e.item.size, key, task: e.item.task };
+              backPlank = null;
+            }
+            worldCommand(state, { type: 'pick', id: 'hero', item: e.id });
+          } }, REACH);
           continue;
         }
         if (zone && rule !== 'heap' && rule !== 'pile') continue;
@@ -5496,6 +5532,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         if (want !== null && chosen?.id !== e.id && chosen?.id !== zone?.id && e.item.task === lastPick?.task && e.item.kind !== want && (wantLeft || SAME_KIND.has(lastPick.task))) continue;
         // Of the planks of the bridge, the length of the last pick, while the pile has one.
         if (sizeLeft && rule === 'pile' && e.item.task === plankTask && e.item.size !== plankSize) continue;
+        // While the plank before glows (each length went after it), a press takes it back first.
+        if (backPlank && rule === 'pile' && chosen?.id !== e.id && chosen?.id !== zone?.id) continue;
         // A press picks a thing of a task only when a place of the task has room for it: no stake
         // after the row is at the float (#54: the stake stayed in the hands with no act).
         if (chosen?.id !== e.id && openTask(e.item.task) && !roomFor(e)) continue;
@@ -5630,6 +5668,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (zone.rule === 'span') {
         const before = zone.items.reduce((a, id) => a + (getEntity(state, id)?.item.size ?? 0), 0);
         const slot = spanSlot(zone, before, held.item.size);
+        // The plank that did not fit goes on the pile with the next press, not back on the same gap
+        // (#191); a tap on the gap still puts it there.
+        if (stuckBack?.id === held.id && chosen?.id !== z.id) continue;
         // An open gap of the bridge is the work of its plank: a press far from it walks there (#85).
         add({ act: 'put', icon: 'hand-put', target: z.id, at: z.position, work: work || (bridgeOpen() && openSpan(zone.id)), rank: 0, ghost: { look: held.look, x: slot.x, y: slot.y, z: slot.z, facing: 0 }, run: () => put(null) }, REACH);
       } else if (zone.rule === 'line') {
@@ -5678,12 +5719,30 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         // Back on the pile only after a tap on the pile or on one of its planks, or when no place
         // takes the plank: a press with a plank in the hands goes to the gap (#85: the press put
         // the plank back on the pile, and the child did not see where it went).
-        if (!noPlace && (!chosen || ![z.id, ...zone.items].includes(chosen.id))) continue;
+        const back = stuckBack?.id === held.id;
+        if (!noPlace && !back && (!chosen || ![z.id, ...zone.items].includes(chosen.id))) continue;
         // A pile is long: near the pile or near one of its planks.
         // A tap on a plank of the pile makes the pile the target too.
         const near = [z.position, ...zone.items.map((id) => getEntity(state, id)).filter(Boolean).map(middleOf)];
         const at = near.reduce((a, b) => (distHb(hp, b) < distHb(hp, a) ? b : a));
-        add({ act: 'put', icon: 'hand-put', target: z.id, keys: [z.id, ...zone.items], at, work, rank: 0.5, run: () => put(null) }, REACH + 3);
+        add({ act: 'put', icon: 'hand-put', target: z.id, keys: [z.id, ...zone.items], at, work: work || back, rank: 0.5, run: () => {
+          if (back) {
+            otherThan = stuckBack;
+            stuckBack = null;
+          }
+          put(null);
+          // Each length of the pile went at that place: the plank before it is the plank to change,
+          // and it glows with the same line.
+          if (back && otherSize(otherThan) === null) {
+            const span = getEntity(state, otherThan.key.slice(0, otherThan.key.lastIndexOf(':')));
+            const last = span?.zone.items.at(-1);
+            otherThan = null;
+            if (last) {
+              backPlank = last;
+              bridgeStuck({ id: span.id, item: last });
+            }
+          }
+        } }, REACH + 3);
       } else if (zone.rule === 'heap') {
         if (held.item.home !== zone.id) continue;
         // Back on its own heap: only after a tap on the heap, or when no place takes the thing. A
@@ -7309,6 +7368,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if ((ev.type === 'pick' || ev.type === 'put') && ev.item) {
         const it = getEntity(state, ev.item)?.item;
         if ((it?.task?.startsWith('trial-') || openSpan(it?.task)) && (ev.id === 'hero' || lastPick?.task !== it.task || !lastPick.child)) lastPick = { task: it.task, kind: it.kind, size: it.size, child: ev.id === 'hero' };
+        // The shorter plank was taken: the next press takes the same length again (#191).
+        if (ev.type === 'pick' && ev.id === 'hero' && otherThan && it?.size !== otherThan.size) otherThan = null;
         // The words of the row of the fisher when they are used (#130: seven lines of the start talk):
         // "khe" at the first stake of the child, "đăng" at the second, at the grades of WORD_GRADE.
         if (ev.type === 'put' && ev.id === 'hero' && ev.zone === 'line') {
