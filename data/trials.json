@@ -77,10 +77,11 @@
       "_task": "The iron horse for Gióng. The iron that the child found lies in a heap by the forge, with some old iron of the smith. The child carries lumps into the hearth and takes lumps out again, then taps the bellows (the commit of the count): with the lumps that the smith needs, the fire burns high and the iron goes on the anvil; with too few, the fire puffs and dies; with too many, the fire chokes and the extra rolls back to the heap. Then the iron glows and dims as in the trial of the smith, and a tap drops it into the water: at the right moment it becomes the iron horse.",
       "extra": 3, "take": { "iron": 6 }, "startSet": "horse.iron", "clears": "smith",
       "glow": { "rise": 2.5, "dim": 2.5, "cold": 1.5, "hot": 0.6 },
+      "_hold": "hold: the seconds of the full red. The bar is hot from about 1 s before the full red to about 1 s after it, so that a hold of 3.2 s keeps it hot for 1 s after the last word of 'Đỏ rồi! Nhúng ngay!' (about 1.2 s) and 3 s more (#188: children of eight answer one and a half to two times as slowly as adults, Kail 1991).",
       "levels": [
-        { "ore": 6, "hold": 3, "skill": "sci.matter.states", "level": 1, "count": { "skill": "math.count.120", "level": 1 } },
-        { "ore": 6, "hold": 2, "skill": "sci.matter.states", "level": 2, "count": { "skill": "math.count.120", "level": 1 } },
-        { "ore": 6, "hold": 1.4, "skill": "sci.matter.states", "level": 2, "count": { "skill": "math.count.120", "level": 2 } }
+        { "ore": 6, "hold": 3.2, "skill": "sci.matter.states", "level": 1, "count": { "skill": "math.count.120", "level": 1 } },
+        { "ore": 6, "hold": 3.2, "skill": "sci.matter.states", "level": 2, "count": { "skill": "math.count.120", "level": 1 } },
+        { "ore": 6, "hold": 3.2, "skill": "sci.matter.states", "level": 2, "count": { "skill": "math.count.120", "level": 2 } }
       ],
       "places": { "ore": "horse-ore", "forge": "smith-forge", "anvil": "smith-anvil" },
       "_goals": "The goal bar at each part of the forge (#140): the lumps go into the hearth, the fire, the quench.",

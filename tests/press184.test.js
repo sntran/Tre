@@ -81,6 +81,10 @@ test('the forge: a press from the bellows, with no tap, walks to the anvil and d
   const s = h.session;
   const tz = getEntity(s.state, 'zone:trial-horse').zone;
   const bellows = getEntity(s.state, 'bellows:horse').position;
+  // The bar waits for the hero at the anvil (#188): the hero comes there one time, then goes back to
+  // the bellows.
+  Object.assign(getEntity(s.state, 'hero').position, { x: tz.anvil.x + 3, z: tz.anvil.z + 2 });
+  h.run(0.5);
   Object.assign(getEntity(s.state, 'hero').position, { x: bellows.x + 2, z: bellows.z + 1 });
   // Wait for the red bar on the anvil.
   h.run(20, () => (getEntity(s.state, 'iron:horse')?.glow ?? 0) >= 0.9 && tz.heat !== null);

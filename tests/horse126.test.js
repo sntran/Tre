@@ -33,13 +33,16 @@ async function atForge(grade = 1) {
   const zone = (id) => getEntity(session.state, `zone:${id}`)?.zone;
   const press = () => { session.command({ type: 'hands', id: session.action()?.id }); run(2); };
   const tap = (target) => { session.command({ type: 'tap', target }); run(4); };
-  // One lump from the heap into the hearth.
+  // One lump from the heap into the hearth: one press takes it and puts it in when the heap and the
+  // hearth are in reach (#188); else a tap on the hearth and a second press.
   const lump = () => {
     const id = zone('horse-ore').items.find((x) => !getEntity(session.state, x)?.item.held);
     tap({ thing: id });
     press();
-    tap({ thing: 'hearth:horse' });
-    press();
+    if (session.carried()) {
+      tap({ thing: 'hearth:horse' });
+      press();
+    }
   };
   return { session, said, events, run, zone, press, tap, lump };
 }
@@ -83,6 +86,12 @@ test('a tap on the oven of the forge makes the hearth the place of the next pres
   const id = h.zone('horse-ore').items[0];
   h.tap({ thing: id });
   h.press();
+  // One press takes the lump and puts it into the hearth when both are in reach (#188): a tap on it
+  // and a press take it back into the hands.
+  if (!getEntity(h.session.state, 'hero').hands?.holds) {
+    h.tap({ thing: h.zone('hearth').items[0] });
+    h.press();
+  }
   assert.ok(getEntity(h.session.state, 'hero').hands?.holds, 'a lump in the hands');
   // The oven of the forge (the object "forge" of the map), as the view sends a tap on it.
   const oven = getEntity(h.session.state, 'hearth:horse').position;

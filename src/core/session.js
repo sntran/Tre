@@ -1138,10 +1138,18 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // anvil away from it (anvilStand), with the angle of the view of now.
   const ANVIL_NEAR = 7; // half blocks from the anvil: the hero is at the work of the anvil
   const ANVIL_CALM = 3; // seconds with no tap and no press of the child before the hero steps aside
+  const ANVIL_ON = 1.6; // half blocks from the anvil: the hero stands on it
   let anvilStill = 0;
   function stepAnvilSide() {
     const h = hero();
     const tz = ['smith', 'horse'].map((id) => trialZone(id)).find((z) => z && !z.zone.done && z.zone.anvil);
+    // A hero who rides in on Nghé to the bar of the iron horse gets down there (#188: "my buffalo
+    // was standing in front of the đe"): Nghé goes behind the anvil, and the hero stands beside it.
+    if (tz?.id === 'zone:trial-horse' && h?.riding && !walking() && !screen && !busy && horsePart() === 'quench' && distHb(h.position, tz.zone.anvil) <= ANVIL_NEAR + 3) {
+      worldCommand(state, { type: 'ride', id: 'hero' });
+      anvilStill = 0;
+      return;
+    }
     // Not while the child acts: a tap or a press of the last seconds keeps the hero where it is.
     if (!tz || !h || h.riding || walking() || screen || busy || holding() || (state.tick - lastChild) * STEP < ANVIL_CALM) {
       anvilStill = 0;
@@ -1152,7 +1160,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const dz = h.position.z - a.z;
     // The part of the way from the anvil to the hero that goes toward the camera.
     const toward = dx * Math.sin(viewAz) + dz * Math.cos(viewAz);
-    if (Math.hypot(dx, dz) > ANVIL_NEAR || toward <= 0.5) {
+    // Also a hero on the anvil itself steps to its side (#188).
+    if (Math.hypot(dx, dz) > ANVIL_NEAR || (toward <= 0.5 && Math.hypot(dx, dz) > ANVIL_ON)) {
       anvilStill = 0;
       return;
     }
@@ -4669,12 +4678,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   }
   // The place of a one-press move (#61): the mat of the teacher or the basket of the healer that
   // takes the thing, when the hero stands in reach of it. Null: the press only picks.
-  const ONE_MOVE = new Set(['bundle', 'basket', 'leaf', 'bandrow', 'boat']);
+  // The hearth of the iron horse too (#188: twelve presses for six lumps, a pick and a put each).
+  const ONE_MOVE = new Set(['bundle', 'basket', 'leaf', 'bandrow', 'boat', 'hearth']);
   function oneMovePlace(thing) {
     const h = hero().position;
     // The mats of the teacher at grades 4 and 5 take a thing only by a put at the mat (#101): a
     // bundle can go to a desk or to the table too.
-    return query(state, 'zone').find((z) => ONE_MOVE.has(z.zone.rule) && z.zone.oneMove !== false && z.zone.task === thing.item.task && canPut(z.zone, thing) && hasRoom(z.zone) && distHb(h, nearestPoint(z, h)) <= REACH + 2) ?? null;
+    return query(state, 'zone').find((z) => ONE_MOVE.has(z.zone.rule) && z.zone.oneMove !== false && !(z.zone.rule === 'hearth' && (trialZone('horse')?.zone.heat ?? null) !== null) && z.zone.task === thing.item.task && canPut(z.zone, thing) && hasRoom(z.zone) && distHb(h, nearestPoint(z, h)) <= REACH + 2) ?? null;
   }
   // The tasks where the child put a thing, and the last thing that the child took from a heap
   // ({ task, kind }).
@@ -4787,9 +4797,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     } else if (friend.follow.goal?.anvil) delete friend.follow.goal;
   }
   // A line of the smith at the forge of the iron horse.
-  function horseSay(key) {
+  function horseSay(key, params = {}) {
     const smith = getEntity(state, 'npc:smith');
-    if (smith && !smith.hidden) emit({ type: 'open', screen: 'callout', id: smith.id, textKey: key, params: {} });
+    if (smith && !smith.hidden) emit({ type: 'open', screen: 'callout', id: smith.id, textKey: key, params });
   }
   function horseStep(step) {
     const smith = getEntity(state, 'npc:smith');
@@ -4798,7 +4808,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const things = {
       lumps: [zoneOf('horse-ore'), getEntity(state, 'hearth:horse')],
       bellows: [getEntity(state, 'bellows:horse')],
-      anvil: [getEntity(state, tz.zone.iron), zoneOf('trough')],
+      // The water glows only when the bar is red (#188: the drop glowed from the start, and the
+      // first press was early).
+      anvil: [getEntity(state, tz.zone.iron)],
       there: [getEntity(state, tz.zone.iron)],
       wait: [getEntity(state, tz.zone.iron)],
     }[step].filter(Boolean);
@@ -5308,7 +5320,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       for (const id of ['smith', 'horse']) {
         const tz = open(id);
         // While the smith shows the quench on his own piece, the iron is his.
-        const iron = tz?.zone.heat !== null && tz?.zone.heat !== undefined && !tz.zone.bent && !tz.zone.demo ? getEntity(state, tz.zone.iron ?? 'iron:smith') : null;
+        // No dip of a bent bar, and none while it goes back into the fire (#188: each press bent the
+        // cold bar again, three times in a row).
+        const iron = tz?.zone.heat !== null && tz?.zone.heat !== undefined && !tz.zone.bent && !tz.zone.demo && !tz.zone.reheat ? getEntity(state, tz.zone.iron ?? 'iron:smith') : null;
         if (iron) add({ act: 'quench', icon: 'water', target: iron.id, at: tz.zone.anvil, rank: 0, work: true, run: () => work(id, 'quench') }, REACH + 3);
         // The fair test of grade 5 (#102): a press puts a piece into the water, and a tap on the
         // rack puts a piece in the air.
@@ -6271,6 +6285,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // A tap on the iron horse says what it is (#180: a child took it for a table, and the hero walked
     // behind it): "Ngựa sắt của Gióng."
     if (target.ground && steedTap({ x: target.ground.x * 2, z: target.ground.y * 2 })) return;
+    // A tap on the figure of the iron horse says its name first, and the hero does not walk into it
+    // (#188: "I'm standing INSIDE the ghost horse.").
+    const tappedSteed = tapped && /^steed:/.test(tapped) ? getEntity(state, tapped) : null;
+    if (tappedSteed?.position && steedTap(tappedSteed.position)) return;
     riddles.tap(target.ground ? { x: target.ground.x * 2, z: target.ground.y * 2 } : tapped ? getEntity(state, tapped)?.position : null, target.ground?.object ?? null);
     // An animal of the land answers a tap (#150: "The doggy didn't do anything when I tapped, my
     // buffalo said moo instead."): the dog barks and wags its tail, a chicken clucks, a duck quacks;
@@ -7294,6 +7312,24 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       }
       // A bar that is done lights its pip at once (#127: the pips lit only at the next update).
       if (ev.type === 'hiss') emit({ type: 'hud' });
+      // Each lump in the hearth of the iron horse says its count (#188: "I don't see a number, how
+      // many did I put?"): "Một miếng." … "Sáu miếng. Đủ rồi!"
+      if (ev.type === 'put' && ev.id === 'hero' && ev.zone === 'hearth' && horseOpen()) {
+        const n = zoneOf('hearth')?.zone.items.length ?? 0;
+        const need = taskOf(trialDef('horse'), trialZone('horse').zone.level)?.ore ?? 0;
+        if (n > 0) horseSay(n === need ? 'horse.lump.enough' : 'horse.lump', { n: { key: `num.${Math.min(150, n)}` } });
+      }
+      // The bar waits for the hero at the anvil: the smith calls, and the anvil glows (#188: the
+      // child waited about 9 s at the bellows).
+      if (ev.type === 'fire' && ev.id === 'zone:trial-horse' && trialZone('horse')?.zone.waitHero) {
+        const tz = trialZone('horse');
+        const a = tz.zone.anvil;
+        if (a && distHb(hero().position, a) > REACH + 3) {
+          horseSay('horse.come');
+          const iron = getEntity(state, tz.zone.iron);
+          if (iron) emit({ type: 'glowSeq', ids: [iron.id] });
+        }
+      }
       // The fire of the iron horse: the step of the anvil (#126).
       if (ev.type === 'fire' && ev.id === 'zone:trial-horse') horseStep(ev.again ? 'wait' : 'anvil');
       // The bar turns red: the smith says it at the moment, and the bar and the water glow (#179:

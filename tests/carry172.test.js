@@ -33,7 +33,9 @@ test('after one lump in the hearth, the button is the next lump, not the bellows
   h.run(5);
   h.session.command({ type: 'hands', id: h.session.action()?.id });
   h.run(1);
-  h.session.command({ type: 'hands', id: h.session.action()?.id });
+  // One press takes a lump and puts it in the hearth when both are in reach (#188); else a second
+  // press puts it.
+  if (h.session.carried()) h.session.command({ type: 'hands', id: h.session.action()?.id });
   h.run(5);
   assert.equal(getEntity(h.session.state, 'zone:hearth').zone.items.length, 1, 'one lump in the hearth');
   const acts = [];

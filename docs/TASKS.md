@@ -813,3 +813,14 @@ In the short plays after #182, presses were lost in four places, with no sound a
 - **A word after each cut,** at once: "Bốn đốt, bằng gậy mẫu!" or "Khúc này có sáu đốt. Gậy mẫu có bốn đốt: khúc này dài hơn." (`staffs.cut.*`).
 - **The break names its piece:** "Khúc trước có sáu đốt, dài hơn gậy mẫu, nên gãy." (`staffs.broke.*`), and the culm that grows again: "Cây tre mọc lại, em chặt lại nhé."
 - **Tests:** `tests/staffs187.test.js`; the robot walker at `staffs-grade1` with no `lineBeforeAct`.
+
+## The dip of the iron horse: a window of seconds (#188)
+
+- **The window starts after the line.** The full red holds 3.2 s at every level (`hold` of the horse in `data/trials.json`): the bar is hot from about 1 s before the full red to about 1 s after it, so it stays hot for 1 s after the last word of "Đỏ rồi! Nhúng ngay!" (about 1.2 s) and 3 s more.
+- **No loop of bends.** While the bar goes back into the fire after a bend, the button has no dip, and a press never bends the cold bar again.
+- **The water glows only at the red.** At the fire only the bar glows; at the red the bar and the water glow.
+- **The bar in view.** A hero who rides in on Nghé gets down near the anvil, so that Nghé goes behind it; a hero on the anvil steps to its side.
+- **The anvil calls.** When the bar waits for the hero at the anvil and the hero is away, the smith says "Cháu lại đây, đứng cạnh đe nhé." and the bar glows.
+- **The count of the lumps.** Each lump in the hearth says its count ("Một miếng." … "Sáu miếng. Đủ rồi!"), and with the heap and the hearth in reach one press takes a lump and puts it in (the hearth is a place of one move, `ONE_MOVE`).
+- **The iron horse after the win.** A tap on it says "Ngựa sắt của Gióng." and the hero does not walk into it.
+- **Tests:** `tests/forge188.test.js`; the story `forge-horse` puts each lump with one press.

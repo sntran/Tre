@@ -1426,7 +1426,8 @@ function act(world, e, want, env) {
     }
     if (want.act === 'rack') return;
     const iron = getEntity(world, tz.zone.iron ?? 'iron:smith');
-    if (!iron || tz.zone.heat === null || tz.zone.bent || tz.zone.demo || !near(tz.zone.anvil, REACH + 3)) return;
+    // No dip while the bar goes back into the fire (#188).
+    if (!iron || tz.zone.heat === null || tz.zone.bent || tz.zone.demo || tz.zone.reheat || !near(tz.zone.anvil, REACH + 3)) return;
     const value = glowAt(tz.zone.heat, task.glow, task.hold);
     // From grade 3 (#102): the color of the iron, and at grade 4 the water of the trough too.
     const color = task.colors ? colorAt(tz.zone.heat, task.colors) : null;
