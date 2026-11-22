@@ -27,9 +27,11 @@ export function bambooSections(profile) {
 
 // A card of a profile: the hero, the name, and where the child is (the era and the bamboo). A tap
 // plays; a long press opens a small sheet (rename, export, delete), each behind the parent gate.
-function profileCard(ctx, p) {
+// main: the card of the last save, the big yellow button of the screen (#191: a boy pressed the
+// big yellow "Cuộc phiêu lưu mới" first, and the game asked his name again).
+function profileCard(ctx, p, main = false) {
   const sections = bambooSections(p.profile);
-  const card = h('button', { class: 'profile-card', type: 'button' }, [
+  const card = h('button', { class: main ? 'profile-card main' : 'profile-card', type: 'button' }, [
     h('span', { class: 'mini-portrait' }, [portraitCanvas(ctx, heroLookOf(ctx, p.hero), { size: 56 })]),
     h('span', { class: 'profile-text' }, [
       h('span', { text: t('title.play', { name: p.name }) }),
@@ -101,7 +103,7 @@ export async function mountTitle(ctx) {
   }
   if (good.length) {
     const list = h('div', { class: 'profiles' });
-    for (const p of good) list.append(profileCard(ctx, p));
+    good.forEach((p, i) => list.append(profileCard(ctx, p, i === 0)));
     text.append(list);
   }
   // A new adventure is always there. With the profiles full, one line says so, and the parent gate
@@ -115,7 +117,7 @@ export async function mountTitle(ctx) {
     }
     line.hidden = false;
     ctx.openParent({ tab: 'games' });
-  }, { cls: good.length ? 'btn' : 'btn big red' }), line);
+  }, { cls: good.length ? 'btn small paper' : 'btn big red' }), line);
   text.append(langSwitch);
 
   wrap.append(bambooStack(bambooSections(latest)), text);

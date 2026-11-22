@@ -109,3 +109,13 @@ test('the line of the boss raid does not say that Gióng comes; the first sight 
   assert.ok(h.events.slice(at, at + 3).some((e) => e.type === 'glowSeq' && (e.ids.includes('npc:giong-hero') || e.ids.includes('companion:raid'))), 'Gióng glows');
   assert.equal(h.events.filter((e) => e.type === 'open' && e.textKey === 'giong.seen.horse').length, 1, 'one time');
 });
+
+test('the title: with a save, the card of the save is the big yellow button, and a new adventure is a small button below it', () => {
+  const ui = readFileSync(new URL('../src/ui/title.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles/main.css', import.meta.url), 'utf8');
+  assert.match(ui, /good\.forEach\(\(p, i\) => list\.append\(profileCard\(ctx, p, i === 0\)\)\);/);
+  assert.match(ui, /cls: good\.length \? 'btn small paper' : 'btn big red'/);
+  assert.match(css, /\.profile-card\.main \{[^}]*background: var\(--yellow\)/);
+  // The list of the saves comes before the button of a new adventure.
+  assert.ok(ui.indexOf("text.append(list)") < ui.indexOf("text.append(button(t('title.new')"));
+});

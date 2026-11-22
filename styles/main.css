@@ -466,6 +466,10 @@ button.count { font: inherit; font-weight: 700; color: var(--ink); cursor: point
 }
 .profile-card:active { transform: translateY(3px); }
 .profile-card .mini-portrait { width: 60px; height: 60px; }
+/* The card of the last save is the big yellow button of the title (issue 191); a new adventure is a
+   small button below it. */
+.profile-card.main { min-height: calc(var(--touch) + 24px); padding: 10px 24px 10px 10px; background: var(--yellow); font-size: var(--text-big); }
+.profile-card.main .mini-portrait { width: 76px; height: 76px; }
 .profile-text { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
 .profile-where { display: flex; align-items: center; gap: 6px; font-family: var(--body); font-weight: 400; font-size: var(--text-small); }
 /* The bamboo of the hero in the HUD (#8): a section for each level, a shoot that grows on top. */
