@@ -1,0 +1,181 @@
+{
+ "about": "#190: grade 0, the ferry riddle with presses: both banks in view, the next move at the landing, the end.",
+ "start": "?story=ferry-k",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "0",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 2
+  },
+  {
+   "wait": 10
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "1-both-banks-in-view"
+  },
+  {
+   "press": true,
+   "after": 2.5,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'puzzle.ferry.done')"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz') || tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry.state === 'wait'",
+   "timeout": 30
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "press": true,
+   "after": 2.5,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'puzzle.ferry.done')"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz') || tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry.state === 'wait'",
+   "timeout": 30
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "2-the-next-move-at-the-landing"
+  },
+  {
+   "press": true,
+   "after": 2.5,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'puzzle.ferry.done')"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz') || tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry.state === 'wait'",
+   "timeout": 30
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "press": true,
+   "after": 2.5,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'puzzle.ferry.done')"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz') || tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry.state === 'wait'",
+   "timeout": 30
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "press": true,
+   "after": 2.5,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'puzzle.ferry.done')"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz') || tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry.state === 'wait'",
+   "timeout": 30
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "press": true,
+   "after": 2.5,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'puzzle.ferry.done')"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz') || tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry.state === 'wait'",
+   "timeout": 30
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "press": true,
+   "after": 2.5,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'puzzle.ferry.done')"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz') || tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry.state === 'wait'",
+   "timeout": 30
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "press": true,
+   "after": 2.5,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'puzzle.ferry.done')"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz') || tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry.state === 'wait'",
+   "timeout": 30
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "press": true,
+   "after": 2.5,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'puzzle.ferry.done')"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz') || tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry.state === 'wait'",
+   "timeout": 30
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-4).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "3-the-end-on-the-bank-of-the-hero"
+  }
+ ]
+}

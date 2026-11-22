@@ -1,0 +1,143 @@
+{
+ "about": "#184, #189: grade 4, the leaves of bà lang: the recipe before the first put, presses during a walk, and the give.",
+ "start": "?story=trial-healer",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "4",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 90
+  },
+  {
+   "read": 20
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => /^mentor\\.first\\.you/.test(x.key ?? ''))",
+   "timeout": 120
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-6).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "1-the-recipe-before-the-first-put"
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.item?.kind === 'herb-rauma' && e.item.zone === 'bed-rauma' && !e.item.held)?.id ?? null"
+   },
+   "after": 0.5
+  },
+  {
+   "press": true,
+   "after": 0.4
+  },
+  {
+   "press": true,
+   "after": 0.4
+  },
+  {
+   "press": true,
+   "after": 0.4
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 4
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.filter((e) => e.item?.zone === 'basket').map((e) => e.item.kind))"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-4).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "2-presses-during-the-walk-each-put-a-bunch"
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "wait": 6
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-5).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "3-the-give-says-the-packs-and-the-herbs"
+  }
+ ]
+}

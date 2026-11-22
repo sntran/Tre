@@ -1,0 +1,461 @@
+{
+ "about": "#191: grade 0, the small event cart: each stones has its count, the last says enough, and the person checks.",
+ "start": "?story=event-cart",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "0",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 2
+  },
+  {
+   "walk": {
+    "person": "cart"
+   },
+   "taps": 12
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "tap": {
+    "person": "cart"
+   },
+   "after": 0.4
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) || tre.activeVillage.heard().some((x) => x.key === 'event.cart.start')",
+   "timeout": 60
+  },
+  {
+   "read": 8
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => e.script)",
+   "timeout": 90
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.item?.kind === 'stones' && !e.item.stray && !e.item.held && !/place/.test(e.item.zone ?? ''))?.id ?? null"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "press": true,
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 20,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "tap": {
+    "place": "event-cart-place"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "press": true,
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds",
+   "timeout": 20,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.item?.kind === 'stones' && !e.item.stray && !e.item.held && !/place/.test(e.item.zone ?? ''))?.id ?? null"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "press": true,
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 20,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "tap": {
+    "place": "event-cart-place"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "press": true,
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds",
+   "timeout": 20,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "1-each-stones-has-its-count"
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.item?.kind === 'stones' && !e.item.stray && !e.item.held && !/place/.test(e.item.zone ?? ''))?.id ?? null"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "press": true,
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 20,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "tap": {
+    "place": "event-cart-place"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "press": true,
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds",
+   "timeout": 20,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.item?.kind === 'stones' && !e.item.stray && !e.item.held && !/place/.test(e.item.zone ?? ''))?.id ?? null"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "press": true,
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 20,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "tap": {
+    "place": "event-cart-place"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "press": true,
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds",
+   "timeout": 20,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.item?.kind === 'stones' && !e.item.stray && !e.item.held && !/place/.test(e.item.zone ?? ''))?.id ?? null"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "press": true,
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 20,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "tap": {
+    "place": "event-cart-place"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "press": true,
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds",
+   "timeout": 20,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.item?.kind === 'stones' && !e.item.stray && !e.item.held && !/place/.test(e.item.zone ?? ''))?.id ?? null"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "press": true,
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 20,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "tap": {
+    "place": "event-cart-place"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "press": true,
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds",
+   "timeout": 20,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.item?.kind === 'stones' && !e.item.stray && !e.item.held && !/place/.test(e.item.zone ?? ''))?.id ?? null"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "press": true,
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 20,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "tap": {
+    "place": "event-cart-place"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "press": true,
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds",
+   "timeout": 20,
+   "if": "!tre.activeVillage.heard().some((x) => /^event\\.cart\\.(put\\.enough|all)/.test(x.key ?? ''))"
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "2-the-last-says-enough"
+  },
+  {
+   "tap": {
+    "thingExpr": "'event:cart'"
+   },
+   "after": 0.4
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer, .say-layer'))",
+   "timeout": 15
+  },
+  {
+   "wait": 1.2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "3-the-person-checks"
+  }
+ ]
+}

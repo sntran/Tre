@@ -1,0 +1,86 @@
+{
+ "about": "#191: the title with a save: the card of the save is the big yellow button, a new adventure a small one below it.",
+ "start": "?",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "wait": 3
+  },
+  {
+   "click": "Cuộc phiêu lưu mới"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "click": "Bình"
+  },
+  {
+   "click": "Tiếp"
+  },
+  {
+   "wait": 3
+  },
+  {
+   "create": "Minh"
+  },
+  {
+   "read": 3
+  },
+  {
+   "read": 4
+  },
+  {
+   "click": "Chào nghé con",
+   "if": "[...document.querySelectorAll('button')].some((b) => b.offsetParent && b.textContent.includes('Chào nghé con'))",
+   "after": 1.5
+  },
+  {
+   "click": "Đồng ý",
+   "if": "Boolean(document.querySelector('.name-input'))",
+   "after": 1
+  },
+  {
+   "read": 10
+  },
+  {
+   "wait": 3
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Lưu và về màn hình đầu",
+   "after": 3
+  },
+  {
+   "until": "Boolean(document.querySelector('.title-screen'))",
+   "timeout": 60
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "[...document.querySelectorAll('.title-screen button')].map((b) => b.className + ': ' + b.textContent.trim()).join(' | ')"
+  },
+  {
+   "shot": "1-the-title-the-save-is-the-big-yellow-button"
+  }
+ ]
+}

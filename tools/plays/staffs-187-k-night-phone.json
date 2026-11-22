@@ -1,0 +1,225 @@
+{
+ "about": "#184, #187: grade 0 at night, the bamboo staffs: follow the star, the show, the number first, the word of each cut.",
+ "start": "?story=staffs-grade1&clock=1140",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "0",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "woodcutter"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 90
+  },
+  {
+   "read": 10
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "after": 1
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "1-the-child-follows-the-woodcutter-by-his-star"
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "after": 0.5,
+   "if": "tre.activeVillage.session.workLead?.()"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240,
+   "if": "tre.activeVillage.session.workLead?.()"
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "after": 0.5,
+   "if": "tre.activeVillage.session.workLead?.()"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240,
+   "if": "tre.activeVillage.session.workLead?.()"
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "after": 0.5,
+   "if": "tre.activeVillage.session.workLead?.()"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240,
+   "if": "tre.activeVillage.session.workLead?.()"
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "after": 0.5,
+   "if": "tre.activeVillage.session.workLead?.()"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240,
+   "if": "tre.activeVillage.session.workLead?.()"
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "after": 0.5,
+   "if": "tre.activeVillage.session.workLead?.()"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240,
+   "if": "tre.activeVillage.session.workLead?.()"
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "after": 0.5,
+   "if": "tre.activeVillage.session.workLead?.()"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240,
+   "if": "tre.activeVillage.session.workLead?.()"
+  },
+  {
+   "walk": {
+    "thing": "culm:staffs:0"
+   },
+   "taps": 30,
+   "near": 90
+  },
+  {
+   "tap": {
+    "thing": "culm:staffs:0"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => /^staffs\\.turn/.test(x.key ?? ''))",
+   "timeout": 120
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-4).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "2-the-number-of-the-sample-before-the-hold"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => e.script)",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "thing": "culm:staffs:1"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 1.2
+  },
+  {
+   "hold": {
+    "until": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-staffs')?.zone.aim?.at ?? 0) >= 4",
+    "timeout": 20
+   }
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-5).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "3-each-cut-has-its-word"
+  }
+ ]
+}

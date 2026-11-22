@@ -1,0 +1,250 @@
+{
+ "about": "#191: grade 0, the bridge with presses only: after the take-back the plank goes on the pile, and presses fill the gap.",
+ "start": "?story=bridge-mashing",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "0",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 2
+  },
+  {
+   "wait": 3
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "1-the-plank-that-did-not-fit-goes-back-on-the-pile"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-4).map((x) => [x.key, x.text]))"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.items.map((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.size))"
+  },
+  {
+   "shot": "2-presses-alone-fill-the-gap"
+  }
+ ]
+}
