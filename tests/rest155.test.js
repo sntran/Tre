@@ -80,7 +80,8 @@ test('a lost raid of the river while the scouts wait too: the star of rest says 
   assert.equal(h.session.action()?.icon, 'mat');
   h.press(1);
   const m = h.session.state.clock.minutes;
-  assert.ok(m >= 1440 + 6 * 60 && m < 1440 + 6 * 60 + 10, `the dawn of the next day: ${m}`);
+  // The child wakes at the end of the dawn, when the sky is the sky of the day (#191).
+  assert.ok(m >= 1440 + 7 * 60 && m < 1440 + 7 * 60 + 10, `the morning of the next day: ${m}`);
   assert.ok(h.events.some((e) => e.type === 'sleep'));
   assert.ok(h.said.includes('rest.morning'), 'Sáng rồi!');
   assert.equal(h.session.restNow(), null, 'no rest in the morning');

@@ -87,3 +87,12 @@ test('the first card of the notebook is a big open page of the notebook under th
   assert.match(ui, /class: first \? 'print-card first' : 'print-card'/);
   assert.match(css, /\.print-card\.first \{ flex-direction: column;/);
 });
+
+// The sleep itself and its clock: tests/rest155.test.js (the child wakes at 7:00).
+test('after a sleep, "Sáng rồi!" comes when the sky is the sky of the day', async () => {
+  const { nightAt, DEFAULT_DAY } = await import('../src/core/world/systems/sky.js');
+  const sleep = readFileSync(new URL('../src/core/session.js', import.meta.url), 'utf8');
+  assert.match(sleep, /state\.clock\.minutes = nextDawn\(from, \(env\.day \?\? DEFAULT_DAY\)\.dawn\[1\]\);/);
+  assert.equal(nightAt(DEFAULT_DAY.dawn[1]), 0, 'the end of the dawn is the light of the day');
+  assert.ok(nightAt(6) >= 0.5, 'at 6:00 the sky is still dark');
+});

@@ -54,7 +54,7 @@ import { addHero, addFriend, syncPeople, addLifeGroups, addLanterns, addZones, a
 import { placeBySchedule, atWork } from './world/systems/schedule.js';
 import { CHUNK, chunkOf, chunkKey } from '../world/terrain.js';
 import { ground } from './world/systems/ground.js';
-import { rainOf, sky as skyStep } from './world/systems/sky.js';
+import { rainOf, sky as skyStep, DEFAULT_DAY } from './world/systems/sky.js';
 import { REACH, PILE_REACH, learnerRecord, canPut, canTake, spanSlot, nearestPoint } from './world/zones.js';
 import { setupTrial, clearTrial, freeSlot, canTakeWork, toHeap, hasRoom, giveReady, DESK_COLORS, marksFor, backHome } from './world/systems/work.js';
 import { taskPools, POOL } from '../world/light.js';
@@ -3213,9 +3213,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     worldCommand(state, { type: 'drop', id: 'hero' });
   }
+  // The child wakes at the end of the dawn, when the sky is the sky of the day (#191: "Sáng rồi!"
+  // came at 6:00, and the screen stayed dark blue).
   function sleep() {
     const from = state.clock.minutes;
-    state.clock.minutes = nextDawn(from);
+    state.clock.minutes = nextDawn(from, (env.day ?? DEFAULT_DAY).dawn[1]);
     emit({ type: 'sleep', from, to: state.clock.minutes });
     // The enemies of a lost raid are back, and their star shows.
     refreshPeople();
