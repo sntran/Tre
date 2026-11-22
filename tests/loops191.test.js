@@ -4,6 +4,7 @@
 // duck hops at its word.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { runHeadless } from './story-run.js';
 import { STEP } from './restless.js';
 import { load } from './helpers.js';
@@ -78,4 +79,11 @@ for (const [grade, words] of [[1, 'Một, hai, ba, bốn. Đủ đàn rồi!'], 
 test('an odd flock by twos ends with one more', () => {
   const list = { key: 'count.oddLast', params: { a: { key: 'count.next', params: { a: { key: 'num.2' }, b: { key: 'num.4' } } }, n: { key: 'num.5' } } };
   assert.equal(i18n.t('event.duck.counted', { list }), 'Hai, bốn, và một nữa là năm. Đủ đàn rồi!');
+});
+
+test('the first card of the notebook is a big open page of the notebook under the goal bar', () => {
+  const ui = readFileSync(new URL('../src/ui/village.js', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../styles/main.css', import.meta.url), 'utf8');
+  assert.match(ui, /class: first \? 'print-card first' : 'print-card'/);
+  assert.match(css, /\.print-card\.first \{ flex-direction: column;/);
 });

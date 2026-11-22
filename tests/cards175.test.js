@@ -61,8 +61,9 @@ test('the cards wait while a raid goes on, and come one at a time, at least thre
   r.hold = null;
   h.run(40);
   const cards = h.events.filter((e) => e.type === 'notebook');
-  assert.ok(cards.length >= 1, 'the cards of the raid came after it');
   assert.deepEqual(cards.filter((c) => c.raid).map((c) => c.id), [], 'no card while the raid goes on');
+  // The soldiers are gone: their card does not come with no soldier on the screen (#191).
+  assert.ok(!cards.some((c) => c.id === 'creature:soldier'), 'no card of the soldier');
   for (let i = 1; i < cards.length; i++) assert.ok((cards[i].tick - cards[i - 1].tick) * STEP >= 3 - 1e-9, `${cards[i - 1].id} and ${cards[i].id}`);
 });
 

@@ -1651,7 +1651,10 @@ export async function mountVillage(ctx, params = {}) {
   const PRINT_WAIT = 3000;
   let printWait = false; // a card waits for its print: no other card starts
   function showPrint(ev, waited = 0) {
-    const pic = printOf(ctx, ev, 40);
+    // The first card is a big open page of the notebook under the goal bar, with the
+    // new print on it (#191: the first card came small, during a task, and a child did not see it).
+    const first = !profile.notebook?.told;
+    const pic = printOf(ctx, ev, first ? 112 : 40);
     printWait = false;
     if (pic.classList?.contains('portrait-wait') && waited < PRINT_WAIT) {
       printWait = true;
@@ -1673,9 +1676,9 @@ export async function mountVillage(ctx, params = {}) {
     // A word of the name that the child did not hear yet comes with its line (#154: "Tranh mới:
     // Cái đăng." "what is a 'đăng'?").
     const words = wordGloss(ctx, name, ev.titleKey);
-    const card = h('button', { class: 'print-card', type: 'button' }, [
+    const card = h('button', { class: first ? 'print-card first' : 'print-card', type: 'button' }, [
       img('ui/notebook', 'print-book'),
-      h('span', { class: 'note-print' }, [waited ? printOf(ctx, ev, 40) : pic]),
+      h('span', { class: 'note-print' }, [waited ? printOf(ctx, ev, first ? 112 : 40) : pic]),
       // The card says what the voice says (#89).
       h('span', {}, [h('span', { text: t('note.newName', { name }) }), ...words.map((w) => h('small', { class: 'print-word', text: w }))]),
     ]);
@@ -1688,7 +1691,6 @@ export async function mountVillage(ctx, params = {}) {
     // word "sổ tay" is said one time (#81: the voice said "Sổ tay có tranh mới" eight times, and a
     // child did not know the word): at the first card grandma says what the notebook is, and the
     // menu button (where the notebook is) glows; each card then says only the new picture.
-    const first = !profile.notebook?.told;
     if (first) {
       profile.notebook ??= { seen: {} };
       profile.notebook.told = true;

@@ -78,7 +78,7 @@ test('the notebook saves with the profile and loads back', () => {
   assert.throws(() => deserialize(serialize({ ...p, notebook: { seen: { x: 'y' } } })));
 });
 
-test('in play, the notebook fills in: the talk of the fisher, the animals at the river, and the place', async () => {
+test('in play, the notebook fills in: the talk of the fisher, the animals at the river, and the place at its đình', async () => {
   const { runHeadless } = await import('./story-run.js');
   const { readFileSync } = await import('node:fs');
   const story = JSON.parse(readFileSync(new URL('./stories/trial-fisher.json', import.meta.url)));
@@ -94,9 +94,26 @@ test('in play, the notebook fills in: the talk of the fisher, the animals at the
   }
   const seen = session.profile.notebook.seen;
   assert.ok('talk:fisher.trial' in seen);
+  // An animal at the river is in the notebook; its card does not come while the work of the
+  // fisher is open (#191).
+  assert.ok(Object.keys(seen).some((k) => k.startsWith('creature:')), 'an animal at the river');
+  assert.deepEqual(prints.filter((id) => id.startsWith('creature:')), [], 'no card in the work');
+  // The place fills in when its point (the đình of Phù Đổng) is on the screen (#191), not at the
+  // river.
+  assert.ok(!('map:phu-dong' in seen), 'not at the river');
+  const { worldOf } = await import('./helpers.js');
+  const frame = session.map.source.def.frames.find((f) => f.id === 'phu-dong');
+  const [cx, cy] = worldOf().at('phu-dong', frame.cell[0], frame.cell[1]);
+  const hero = session.state.entities.find((e) => e.id === 'hero');
+  Object.assign(hero.position, { x: cx * 2 + 1, z: cy * 2 + 7 });
+  delete hero.route;
+  for (let i = 0; i < 20 / STEP; i++) {
+    if (session.screen) session.command({ type: session.screen === 'dialogue' || session.screen === 'say' ? 'next' : 'close' });
+    session.step();
+    session.events();
+  }
   assert.ok('map:phu-dong' in seen);
   assert.ok(prints.includes('place:phu-dong'));
-  assert.ok(prints.some((id) => id.startsWith('creature:')), 'an animal at the river');
   assert.equal(new Set(prints).size, prints.length, 'each print comes one time');
 });
 

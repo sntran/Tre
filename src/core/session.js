@@ -994,7 +994,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // from: the entity of the print (an animal), which pulses when its card shows (#113).
   // A print with a line (say): the person nearest to the hero says it (#113: at the first card of
   // con trâu, nobody said that Nghé is a young buffalo).
-  function noteKey(key, from = null) {
+  // see: the entities of the card when it has no animal (the soldiers of a raid), or point: the
+  // point of a place; the card shows only while one of them is on the screen (#191).
+  function noteKey(key, from = null, { see = null, point = null } = {}) {
     if (!data.notebook || !noteSeen(profile, key, state?.clock?.minutes ?? 0)) return;
     // The animal of a new picture does its act, and a ring shows under it for some seconds (#145:
     // a child took Nghé for the dog of the picture).
@@ -1006,7 +1008,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       addEntity(state, { id: ring, noteRing: { until: state.tick + NOTE_RING / STEP }, position: { ...animal.position }, look: 'mentor-mark' });
     }
     for (const e of entriesOfKey(data.notebook, key)) {
-      cards.push({ ev: { type: 'notebook', id: e.id, titleKey: e.titleKey, look: e.look ?? null, kind: e.kind, ...(from ? { from } : {}) }, say: e.say ?? null });
+      cards.push({ ev: { type: 'notebook', id: e.id, titleKey: e.titleKey, look: e.look ?? null, kind: e.kind, ...(from ? { from } : {}) }, say: e.say ?? null, tick: state.tick, see, point });
     }
   }
   const NOTE_SAY = 30; // half blocks: the person who says the line of a print
@@ -1014,27 +1016,64 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // the count of a trap, the press during the card was lost, and the trap went to post 1). A card
   // waits while the child counts (the pull of a trap or of the slingshot), holds the button, reads a
   // screen, or plays a raid. The first card of all waits also for a moment with no task and no talk.
-  // The cards come one at a time, CARD_GAP seconds apart. A card of an animal that is no longer in
-  // view goes (its print stays in the notebook): the voice says only what the screen shows (#170).
+  // The cards come one at a time, CARD_GAP seconds apart. A card shows only while its thing is on
+  // the screen (#170, #191: "Tranh mới: Chân núi Trâu Sơn." with no mountain on the screen): the
+  // animal, the soldiers of the raid, the things of the task of a skill, the point of a place, or
+  // the person of a legend. A card waits for its thing for CARD_KEEP seconds, and then it goes (its
+  // print stays in the notebook). No card comes while a work, the share, a talk, or a raid is open
+  // (#191: the first card came at a pick of the share).
   const cards = [];
   const CARD_GAP = 3; // seconds from one card to the next
-  const CARD_VIEW = 40; // half blocks: an animal farther from the hero than this is not in view
+  const CARD_VIEW = 40; // half blocks: a thing farther from the hero than this is not in view
+  const CARD_KEEP = 90; // seconds: a card whose thing does not come on the screen goes
+  const CARD_CALM = 2; // seconds of calm (no work, talk, screen, or count) before a card
   let cardAt = -Infinity; // the tick of the last card
+  let calmAt = -Infinity; // the last tick that was not calm
   let firstCard = false; // the first card of the notebook came in this visit
   const counting = () => Boolean(trapPull || slingPull || dragPull > 0 || holdAct);
   function cardsWait() {
     if (counting() || screen || busy || raidOn()) return true;
     if (query(state, 'script').some((x) => x.script?.waitChild === false)) return true;
-    if (!profile.notebook?.told && !firstCard) return Boolean(comeTalk || workKey() || personTaskHere());
+    if (comeTalk || workKey() || taskHere() || folk.active() || puzzles.here() || holdingPlank()) return true;
+    // The first card of all comes at a calm moment: the hero stands still.
+    if (!profile.notebook?.told && !firstCard) return Boolean(hero()?.route);
     return false;
   }
+  const holdingPlank = () => Boolean(openSpan(getEntity(state, holding())?.item?.task));
+  // Is the thing of a card on the screen now?
+  function cardSeen(c, hp) {
+    if (!hp) return false;
+    if (c.point) return onScreen(c.point, hp);
+    const near = (e) => Boolean(e?.position && !e.hidden && Math.hypot(e.position.x - hp.x, e.position.z - hp.z) <= CARD_VIEW && onScreen(e.position, hp) && !covered(e.position));
+    if (c.ev.from) return near(getEntity(state, c.ev.from));
+    if (c.see) return c.see.some((id) => near(getEntity(state, id)));
+    if (c.ev.kind === 'skill') {
+      const task = c.task ?? null;
+      if (!task) return true;
+      const of = task.startsWith('raid-') ? 'raid' : task;
+      return state.entities.some((e) => (e.item?.task === of || e.zone?.task === of || e.id === `zone:${task}`) && near(e));
+    }
+    // A legend: its person, when the world has one of that look (the messenger of the exam may be
+    // far away: then the card comes with no person).
+    const people = c.ev.look ? state.entities.filter((e) => e.look === c.ev.look && e.position) : [];
+    return !people.length || people.some(near);
+  }
   function stepCards() {
-    if (!cards.length || state.tick - cardAt < CARD_GAP / STEP || cardsWait()) return;
+    if (!cards.length) return;
+    if (cardsWait()) {
+      calmAt = state.tick;
+      return;
+    }
+    if (state.tick - cardAt < CARD_GAP / STEP || state.tick - calmAt < CARD_CALM / STEP) return;
     const hp = hero()?.position;
-    while (cards.length) {
-      const c = cards.shift();
-      const animal = c.ev.from ? getEntity(state, c.ev.from) : null;
-      if (c.ev.from && (!animal?.position || animal.hidden || !hp || Math.hypot(animal.position.x - hp.x, animal.position.z - hp.z) > CARD_VIEW)) continue;
+    for (let i = 0; i < cards.length; i++) {
+      const old = (state.tick - (cards[i].tick ?? state.tick)) * STEP > CARD_KEEP;
+      if (old) {
+        cards.splice(i--, 1);
+        continue;
+      }
+      if (!cardSeen(cards[i], hp)) continue;
+      const [c] = cards.splice(i, 1);
       cardAt = state.tick;
       firstCard = true;
       emit(c.ev);
@@ -1072,12 +1111,21 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // screen, with no talk panel over it, and with no house or roof between it and the camera.
       if (!e.hidden && !screen && Math.hypot(e.position.x - hp.x, e.position.z - hp.z) <= NOTE_NEAR && onScreen(e.position, hp) && !covered(e.position)) noteKey(`creature:${e.kind}`, e.id);
     }
-    for (const en of raidEnt()?.raid.enemies ?? []) if (kinds.has(en.kind)) noteKey(`creature:${en.kind}`);
-    // A place: the hero is in the rect of its map on the plane.
+    // An enemy of a raid: its card waits for an enemy of that kind on the screen.
+    const foes = raidEnt()?.raid.enemies ?? [];
+    for (const en of foes) if (kinds.has(en.kind)) noteKey(`creature:${en.kind}`, null, { see: foes.filter((x) => x.kind === en.kind).map((x) => `raider:${x.id}`) });
+    // A place: the hero is in the rect of its map on the plane, and the point of the place (the
+    // đình of Phù Đổng, the top of the hills of Trâu Sơn) is on the screen (#191: "Tranh mới: Chân
+    // núi Trâu Sơn." came in the rice fields, with no mountain on the screen).
     const c = heroCell();
     for (const p of map.source?.places ?? []) {
       const [x0, y0] = data.world.at(p.id, 0, 0);
-      if (c.x >= x0 && c.y >= y0 && c.x < x0 + p.width && c.y < y0 + p.height) noteKey(`map:${p.id}`);
+      if (!(c.x >= x0 && c.y >= y0 && c.x < x0 + p.width && c.y < y0 + p.height)) continue;
+      const frame = (map.source?.def?.frames ?? []).find((f) => f.id === p.id);
+      const at = frame ? data.world.at(p.id, frame.cell[0], frame.cell[1]) : null;
+      const point = at ? { x: at[0] * 2 + 1, y: env.groundY?.(at[0] + 0.5, at[1] + 0.5) ?? 0, z: at[1] * 2 + 1 } : null;
+      if (point && !onScreen(point, hp)) continue;
+      noteKey(`map:${p.id}`, null, { point });
     }
   }
 
@@ -7015,7 +7063,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         profile.notebook.from ??= {};
         profile.notebook.from[skill.id] ??= from;
         const print = skillPrint(data.notebook, skill, profile.notebook.from[skill.id], profile.notebook.from);
-        cards.push({ ev: { type: 'notebook', id: print.id, titleKey: print.titleKey, look: print.look, kind: 'skill', subject: skill.subject }, say: null });
+        cards.push({ ev: { type: 'notebook', id: print.id, titleKey: print.titleKey, look: print.look, kind: 'skill', subject: skill.subject }, say: null, tick: state.tick, task: profile.notebook.from[skill.id] });
       }
     }
     const pAfter = l?.entry(ev.skill).p ?? null;

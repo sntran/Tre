@@ -1242,6 +1242,12 @@ button.count { font: inherit; font-weight: 700; color: var(--ink); cursor: point
    needs, up to the width of the screen: with "left: 50%" only, the line went on many short lines. */
 .print-card { width: max-content; text-align: left; }
 .print-card .print-book { flex: none; width: 36px; height: 36px; }
+/* The first card of all (issue 191): a big open page of the notebook under the goal bar, above the
+   hero (a card in the middle of the screen covered the hero). */
+.print-card.first { flex-direction: column; gap: 6px; padding: 14px 18px; font-size: 1.15em; text-align: center; }
+.print-card.first .print-book { width: 64px; height: 64px; }
+.print-card.first .note-print { width: 112px; height: 112px; }
+.print-card.first .note-print > * { width: 100%; height: 100%; }
 /* The menu button glows at the first card of the notebook: the notebook is in the menu (#81). */
 .icon-btn.glow-once, .act-btn.glow-once { animation: glow-once 1.2s ease-in-out 5; }
 @keyframes glow-once { 50% { box-shadow: 0 0 12px 5px var(--yellow); transform: scale(1.12); } }

@@ -52,27 +52,23 @@ test('the law of the stories checks the card of a new print', () => {
   assert.deepEqual(laws.text({ type: 'notebook', id: 'creature:nghe', titleKey: 'note.creature.nghe', kind: 'creature' }), []);
 });
 
-test('the first cut of the woodcutter sends the card of a print with the name that a child knows and the picture of the woodcutter', async () => {
+test('the first cut of the woodcutter sends the card of a print with the name that a child knows and the picture of the woodcutter, after the work (#191)', async () => {
   const cards = [];
-  const profile = { name: 'An', grade: 1, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'prologue.started': true } };
-  const failures = await runHeadless({ name: 'small-77', profile, clock: 540, at: ['phu-dong', 51, 8.5], steps: [
-    { press: { entity: 'npc:woodcutter' } },
-    { until: { event: 'open', with: { screen: 'dialogue' }, timeout: 20 } },
-    { read: true },
-    { until: { event: 'call', with: { key: 'mentor.woodcutter.first' }, timeout: 15 } },
-    { press: { stem: 4 } },
-    { until: { event: 'mark', timeout: 10 } },
-    { press: { entity: 'npc:woodcutter' } },
-    { until: { event: 'notebook', timeout: 20 } },
-  ] }, { onSession: (s) => {
+  let session = null;
+  const story = load('tests/stories/trial-woodcutter.json');
+  const failures = await runHeadless({ ...story, steps: [...story.steps, { wait: 20 }] }, { onSession: (s) => {
+    session = s;
     // The child saw the first card before: the first card of all waits for a moment with no task (#175).
     s.profile.notebook ??= { seen: {} };
     s.profile.notebook.told = true;
-    s.listen((ev) => { if (ev.type === 'notebook') cards.push(ev); });
+    s.listen((ev) => { if (ev.type === 'notebook') cards.push({ ...ev, done: Boolean(s.profile.flags['trial.woodcutter.done']) }); });
   } });
   assert.deepEqual(failures.map((f) => `step ${f.step}: ${f.message}`), []);
+  assert.ok(session);
   const card = cards.find((c) => c.kind === 'skill');
   assert.ok(card, cards.map((c) => c.id).join(' '));
+  // No card while the work is open (#191): the card comes after the bundle.
+  assert.ok(card.done, 'the card after the work');
   // The print of the task where the child earned the skill (#81): the bundle of the woodcutter.
   assert.equal(card.titleKey, 'print.math.add.20.trial-woodcutter');
   assert.equal(card.look, 'sticks-2');
