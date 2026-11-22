@@ -495,6 +495,11 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         if (f.lie) L.root.position.y += LIE_UP;
         // The thing that the action button acted on pulses once (a little bigger, then back).
         if (f.pulse > 0) f.pulse = Math.max(0, f.pulse - dt);
+        // A thing that hops at its word of a count (#191).
+        if (f.jump > 0) {
+          f.jump = Math.max(0, f.jump - dt);
+          L.root.position.y += Math.sin(Math.PI * (1 - f.jump / HOP)) * HOP_UP;
+        }
         const glow = glowing.has(f.id);
         L.root.scale.setScalar((f.pulse > 0 ? 1 + 0.18 * Math.sin(Math.PI * (1 - f.pulse / PULSE)) : 1) * (glow ? 1 + 0.08 * breath : 1));
         // A figure that grows (Gióng at each ten bowls, #147) stretches up slowly to its new height,
@@ -659,6 +664,11 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
       }
     },
     // The place of an entity as it is drawn now (world units), and its height.
+    // The figure of an entity hops once (its word of a count aloud, #191).
+    hop(id) {
+      const f = figures.get(id);
+      if (f) f.jump = HOP;
+    },
     // The figure of an entity pulses once (the action button acted on it).
     pulse(id) {
       const f = figures.get(id);

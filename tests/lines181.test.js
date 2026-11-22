@@ -28,7 +28,7 @@ test('the drag of the slingshot comes only from grade 3, in words that a child k
   assert.match(session, /const drag = Number\(profile\.grade \?\? 1\) >= 3 && /);
 });
 
-test('the farmer says how to call her, and counts the ducks aloud by twos', () => {
+test('the farmer says how to call her, and from grade 2 counts the ducks aloud by twos (by ones up to grade 1, #191)', () => {
   assert.equal(vi['event.duck.all'].replace('{n}', vi['num.10']), 'Đủ mười con rồi. Xong thì cháu chạm vào cô, cô đếm cho.');
   const counts = [2, 4, 6, 8, 10];
   const list = counts.slice(1).reduce((a, k) => ({ key: 'count.next', params: { a, b: { key: `num.${k}` } } }), { key: `num.${counts[0]}` });

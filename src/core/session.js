@@ -2747,16 +2747,26 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     emit({ type: 'hud' });
     save('event');
     raiseLine(`event-${id}`);
-    // The farmer counts the ducks aloud by twos when the child calls her (#181: at the end she said
-    // only "Đủ đàn rồi!"): "hai, bốn, sáu, tám, mười. Đủ đàn rồi!"
-    const n = tz.zone.need ?? 0;
+    // The farmer counts the ducks aloud when the child calls her (#181: at the end she said only
+    // "Đủ đàn rồi!"). Up to grade 1 by ones, one word for each duck (#191: a child of K counts one
+    // word for each thing, Gelman and Gallistel 1978): "một, hai, ba, bốn. Đủ đàn rồi!". From grade
+    // 2 by twos, and an odd flock ends with one more: "hai, bốn, và một nữa là năm".
+    const n = Math.min(150, tz.zone.need ?? 0);
     if (def.lines.counted && n > 0) {
+      const ones = Number(profile.grade ?? 1) <= COUNT_ONES_GRADE;
       const counts = [];
-      for (let k = 2; k < n; k += 2) counts.push(k);
-      counts.push(Math.min(150, n));
+      if (ones) for (let k = 1; k <= n; k++) counts.push(k);
+      else for (let k = 2; k <= n; k += 2) counts.push(k);
       // A count aloud: "hai, bốn, sáu" (no "và" before the last word).
-      const list = counts.slice(1).reduce((a, k) => ({ key: 'count.next', params: { a, b: { key: `num.${k}` } } }), { key: `num.${counts[0]}` });
-      say(def.lines.counted, { list }, null, def.person);
+      let list = counts.length ? counts.slice(1).reduce((a, k) => ({ key: 'count.next', params: { a, b: { key: `num.${k}` } } }), { key: `num.${counts[0]}` }) : null;
+      if (!ones && n % 2) list = list ? { key: 'count.oddLast', params: { a: list, n: { key: `num.${n}` } } } : { key: `num.${n}` };
+      // Each duck hops as its word comes: one duck for each word by ones, two by twos (the last
+      // one alone in an odd flock).
+      const ducks = (zoneOf(`event-${id}-place`)?.zone.items ?? []).slice(0, n);
+      const per = ones ? 1 : 2;
+      const hops = [];
+      for (let k = 0; k < ducks.length; k += per) hops.push(ducks.slice(k, k + per));
+      queue(() => openScreen({ screen: 'say' }, { speaker: def.person, textKey: def.lines.counted, params: { list }, ...(hops.length ? { hops } : {}) }));
     } else say(def.lines.done, {}, null, def.person);
     queue(() => clearEvent(id));
   }
@@ -3174,6 +3184,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // A soldier waits at a post at most 4 s (#186: "I am waiting and waiting.").
   const RAID_STOP = Object.freeze({ first: 4, lost: 4 });
   const AIM_HOLD_GRADE = 3; // the highest grade where the aimed enemy stands at every raid
+  const COUNT_ONES_GRADE = 1; // the highest grade where a person counts aloud by ones (#191)
   const TRAP_WAIT_GRADE = 2; // the highest grade where a raid with a trap ask waits for the trap (#185)
   const AIM_HOLD_RAIDS = 4; // from grade 4, the raids of the slingshot where it stands too
   const raidEnt = () => getEntity(state, 'raid');

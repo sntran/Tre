@@ -659,6 +659,8 @@ export async function mountVillage(ctx, params = {}) {
     // A line that names people with their faces: the star of each person (also at the edge of the
     // screen) pulses at its name (#89: the children did not know "bà lang" and "tiều phu").
     if (ev.screen === 'dialogue' || ev.screen === 'say') facePulse = ev.faces?.length ? { list: ev.faces, t0: performance.now() } : null;
+    // A count aloud: each thing hops at its word (#191: the ducks of the farmer).
+    if (ev.hops) ev.hops.forEach((g, i) => setTimeout(() => g.forEach((id) => figures.hop(id)), (HOP_FIRST + i * HOP_PACE) * 1000));
     if (ev.screen === 'dialogue' || ev.screen === 'say') {
       // A line in the box is a new line of its speaker: the lines of the other people go, and so
       // does the last bubble of the speaker (#62: a hint of the smith stayed over his done talk).
@@ -2058,6 +2060,8 @@ export async function mountVillage(ctx, params = {}) {
   let baseGlow = [[], [], [], []];
   let seq = null;
   const SEQ_STEP = 0.7; // seconds for each thing
+  const HOP_FIRST = 0.3; // seconds from the start of a count aloud to its first word
+  const HOP_PACE = 0.55; // seconds for each word of a count aloud
   const SEQ_ROUNDS = 2;
   function startSeq(ids) {
     seq = ids.length ? { ids, t: 0 } : null;

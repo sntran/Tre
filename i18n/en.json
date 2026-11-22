@@ -1607,6 +1607,7 @@
   "event.duck.all": "All {n} ducks are here. When you are ready, tap me, and I count them.",
   "event.duck.short": "I count {n}. The flock is not all here: some are still lost.",
   "event.duck.over": "A brown duck is from another farm. I let it go home.",
+  "count.oddLast": "{a}, and one more is {n}",
   "count.next": "{a}, {b}",
   "event.duck.counted": "{list}. The flock is all here!",
   "event.duck.done": "The whole flock is home! Thank you.",
