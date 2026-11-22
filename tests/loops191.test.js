@@ -50,7 +50,10 @@ test('the bridge: presses alone fill the gap, and the plank that did not fit goe
   assert.equal(sizes.reduce((a, b) => a + b, 0), gap().gap, `the gap is full: ${sizes.join(' + ')}`);
   // After each take-back, the plank goes on the pile, and the next put on the gap is another length.
   const stucks = h.events.filter((e) => e.type === 'open' && e.textKey === 'mentor.bridge.stuck').length;
-  assert.ok(stucks >= 1 && stucks < 8, `${stucks} lines of the stuck gap`);
+  assert.equal(stucks, 1, 'the whole line one time at the gap');
+  const again = h.events.filter((e) => e.type === 'open' && e.textKey === 'mentor.bridge.stuck.again').length;
+  assert.ok(again < 8, `${again} short lines after it`);
+  assert.equal(vi['mentor.bridge.stuck.again'], 'Chưa vừa. Cháu thay tấm khác nhé.');
   for (let i = 1; i < puts.length; i++) {
     if (puts[i].zone !== 'bridge-pile') continue;
     const next = puts.slice(i + 1).find((p) => p.zone === 'bridge-gap');

@@ -1506,9 +1506,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   }
   // A put leaves a rest of the gap that no plank of the pile fits (#90): the person says so at once,
   // and the last plank glows; the big button takes it back (no tap needed while it glows).
+  // The whole line one time at each gap; after it a short line (#191: at a gap of 12 with planks of
+  // 3, 4, and 5, a child who presses heard the long line six times).
+  const stuckSaid = new Set();
   function bridgeStuck(ev) {
     const { who, near } = bridgeSpeaker(ev.id);
-    if (who) emit({ type: 'open', screen: 'callout', id: who.id, textKey: `mentor.${near ? '' : 'nghe.'}bridge.stuck`, params: {} });
+    const again = stuckSaid.has(ev.id);
+    stuckSaid.add(ev.id);
+    if (who) emit({ type: 'open', screen: 'callout', id: who.id, textKey: `mentor.${near ? '' : 'nghe.'}bridge.stuck${again ? '.again' : ''}`, params: {} });
     glowing = [ev.item];
   }
 
