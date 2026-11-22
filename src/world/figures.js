@@ -657,6 +657,9 @@ export function unitGlow() {
 // The things of the Five Trials (src/core/world/systems/work.js). Plain things with flat colors
 // (rule 9 of the design: the content object is plain; the village is rich). Units: half blocks.
 const still = (parts, height, shadow = 0) => ({ kind: 'still', parts, scale: 1, height, shadow });
+// The row of the stones in the hole of a cart, in blocks: ROW_STEP and ROW_LONG of
+// src/core/world/systems/work.js (tests/loops191.test.js keeps them equal).
+export const HOLE_ROW = Object.freeze({ step: 0.8, long: 6 });
 // The tones of the herbs: [below, top]. Perilla (tía tô) is purple below and green on top: the
 // palette of the prints has no purple, so its leaves are indigo below (#61).
 // The tones of the herbs (#108): ngải cứu grey-green, tía tô purple (indigo leaves with a red top:
@@ -685,6 +688,12 @@ export function thingLook(key) {
   m = /^(bundle|bunch)-(\d+)$/.exec(k);
   if (m) return { kind: `seed-${m[1]}`, n: Number(m[2]) };
   if (k === 'plot-stake') return { kind: 'plot-stake' };
+  // The hole of a cart with a pit for each stone (#191), and a ditch with its water at a level of 0
+  // to 4.
+  m = /^mud-hole-(\d+)$/.exec(k);
+  if (m) return { kind: 'mud', n: Number(m[1]) };
+  m = /^ditch-([0-4])$/.exec(k);
+  if (m) return { kind: 'ditch', level: Number(m[1]) };
   // The mat of the teacher with the places of a frame of ten (grade 1 and below, #69), and the glow
   // of an empty place after a count.
   if (k === 'mat-frame') return { kind: 'mat', frame: true };
@@ -1302,9 +1311,27 @@ export function workThing(look) {
     case 'rice-ball-bit': return still([P('leaf', [0.7, 0.06, 0.7], 'green', [0, 0.03, 0]), P('rice', [0.22, 0.14, 0.2], 'paper', [0.1, 0.13, 0])], 0.4);
     case 'rice-bowl': return still([P('foot', [0.4, 0.1, 0.4], 'ashLight', [0, 0.05, 0]), P('bowl', [0.7, 0.24, 0.7], 'diep', [0, 0.22, 0]), P('band', [0.74, 0.06, 0.74], 'indigoPale', [0, 0.31, 0]), P('rice', [0.56, 0.1, 0.56], 'paper', [0, 0.38, 0])], 0.44);
     // The mud under the wheel of a stuck cart.
-    case 'mud': return still([P('mud', [2.6, 0.06, 2], 'wood', [0, 0.03, 0]), P('wet', [1.6, 0.07, 1.2], 'ink', [0.2, 0.04, 0.1]), P('rut', [0.5, 0.08, 2.2], 'ochre', [-0.8, 0.05, 0])], 0.1);
-    // A small ditch at the side of a paddy, where the water goes.
-    case 'ditch': return still([P('bed', [2.8, 0.06, 1.2], 'ochre', [0, 0.03, 0]), P('water', [2.4, 0.07, 0.7], 'indigoPale', [0, 0.05, 0]), P('lip', [2.8, 0.12, 0.15], 'wood', [0, 0.06, -0.6])], 0.1);
+    // With n: one long hole across the view, with a dark pit for each stone in rows of six, at the
+    // places of the stones (HOLE_ROW in src/core/world/systems/work.js; #191: the stones fell on
+    // the road beside the hole).
+    case 'mud': {
+      if (!look.n) return still([P('mud', [2.6, 0.06, 2], 'wood', [0, 0.03, 0]), P('wet', [1.6, 0.07, 1.2], 'ink', [0.2, 0.04, 0.1]), P('rut', [0.5, 0.08, 2.2], 'ochre', [-0.8, 0.05, 0])], 0.1);
+      const across = Math.min(look.n, HOLE_ROW.long);
+      const rows = Math.ceil(look.n / HOLE_ROW.long);
+      const x0 = -HOLE_ROW.step * (HOLE_ROW.long - 1) / 2;
+      const x1 = x0 + HOLE_ROW.step * (across - 1);
+      const z1 = -HOLE_ROW.step * (rows - 1);
+      const parts = [P('mud', [x1 - x0 + 1.1, 0.06, -z1 + 1.1], 'wood', [(x0 + x1) / 2, 0.03, z1 / 2])];
+      for (let i = 0; i < look.n; i++) parts.push(P(`pit${i}`, [0.62, 0.07, 0.62], 'ink', [x0 + (i % HOLE_ROW.long) * HOLE_ROW.step, 0.04, -Math.floor(i / HOLE_ROW.long) * HOLE_ROW.step]));
+      return still(parts, 0.1);
+    }
+    // A small ditch at the side of a paddy, where the water goes. Its water rises with each bucket
+    // (level 0 to 4, #191).
+    case 'ditch': {
+      const level = look.level ?? 1;
+      const water = level ? [P('water', [2.4, 0.07 + level * 0.06, 0.7], 'indigoPale', [0, 0.05 + level * 0.03, 0])] : [];
+      return still([P('bed', [2.8, 0.06, 1.2], 'ochre', [0, 0.03, 0]), ...water, P('lip', [2.8, 0.12 + level * 0.05, 0.15], 'wood', [0, 0.06, -0.6])], 0.1);
+    }
     // A low pen of woven bamboo for the ducks.
     case 'pen': {
       const parts = [];

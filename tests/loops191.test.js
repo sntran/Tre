@@ -119,3 +119,60 @@ test('the title: with a save, the card of the save is the big yellow button, and
   // The list of the saves comes before the button of a new adventure.
   assert.ok(ui.indexOf("text.append(list)") < ui.indexOf("text.append(button(t('title.new')"));
 });
+
+async function eventPresses(name, grade, presses = 14) {
+  const story = load(`tests/stories/${name}.json`);
+  const h = await start(story, { grade, steps: story.steps.slice(0, 5) });
+  for (let c = 0; c < presses; c++) {
+    h.session.command({ type: 'hands', id: h.session.action()?.id });
+    h.run(2.5);
+  }
+  return h;
+}
+
+test('the stones of the cart go into the pits of one long hole, each put says its count, and the last says enough; then a press asks the carter', async () => {
+  assert.equal(vi['event.cart.put'], '{n} hòn.');
+  assert.equal(vi['event.cart.put.enough'], '{n} hòn. Đủ rồi!');
+  const h = await eventPresses('event-cart', 0);
+  const lines = h.events.filter((e) => e.type === 'open' && /^event\.cart\.put/.test(e.textKey ?? ''));
+  const need = lines.length;
+  assert.ok(need >= 4, `${need} counts`);
+  lines.forEach((l, i) => assert.equal(l.params.n.key, `num.${i + 1}`));
+  assert.equal(lines.at(-1).textKey, 'event.cart.put.enough');
+  assert.ok(h.events.some((e) => e.type === 'open' && e.textKey === 'event.cart.done'), 'the press after the count asks the carter, and the cart is out');
+  assert.equal(i18n.t('event.cart.put', { n: { key: 'num.1' } }), 'Một hòn.');
+});
+
+test('the hole of the cart has a pit for each stone, at the places of the stones', async () => {
+  const { HOLE_ROW } = await import('../src/world/figures.js');
+  const { ROW_STEP, ROW_LONG } = await import('../src/core/world/systems/work.js');
+  assert.equal(HOLE_ROW.step * 2, ROW_STEP);
+  assert.equal(HOLE_ROW.long, ROW_LONG);
+  const story = load('tests/stories/event-cart.json');
+  const h = await start(story, { grade: 0, steps: story.steps.slice(0, 5) });
+  const mark = getEntity(h.session.state, 'mark:event-cart');
+  const need = getEntity(h.session.state, 'zone:trial-event-cart').zone.need;
+  assert.equal(mark.look, `mud-hole-${need}`);
+});
+
+test('each bucket of the flood pours with a splash, the water rises in the ditch, and after the last bucket no press takes a bucket', async () => {
+  assert.equal(vi['event.flood.put'], '{n} thùng.');
+  const h = await eventPresses('event-flood', 0, 16);
+  const puts = h.events.filter((e) => e.type === 'put' && e.zone === 'event-flood-place');
+  const need = getEntity(h.session.state, 'zone:trial-event-flood')?.zone.need ?? puts.length;
+  assert.equal(puts.length, need, 'no bucket after the last one');
+  assert.ok(puts.every((e) => e.sound === 'splash'), 'a splash');
+  const lines = h.events.filter((e) => e.type === 'open' && /^event\.flood\.put/.test(e.textKey ?? ''));
+  assert.equal(lines.length, need);
+  assert.equal(lines.at(-1).textKey, 'event.flood.put.enough');
+  assert.ok(h.events.some((e) => e.type === 'open' && e.textKey === 'event.flood.done'), 'the farmer checks');
+  assert.equal(getEntity(h.session.state, 'mark:event-flood')?.look ?? 'ditch-4', 'ditch-4', 'the ditch is full');
+});
+
+test('the looks of the long hole and of the ditch at each level', async () => {
+  const { thingLook, workThing } = await import('../src/world/figures.js');
+  assert.deepEqual(thingLook('mud-hole-5'), { kind: 'mud', n: 5 });
+  assert.deepEqual(thingLook('ditch-0'), { kind: 'ditch', level: 0 });
+  const f = workThing(thingLook('mud-hole-5'));
+  assert.equal(f.parts.filter((p) => /^pit/.test(p.name)).length, 5);
+});

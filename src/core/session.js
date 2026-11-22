@@ -5105,6 +5105,31 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
   }
   // The count of the farmer after a duck goes into the pen of the small event of the ducks.
+  // The stones of the cart and the buckets of the flood: each put says the count, from the person of
+  // the event, and the last says that it is enough (#191: "I think it fell on the road next to the
+  // hole, not IN the hole… Nobody said good job."). A bucket pours with a splash, and the water
+  // rises in the ditch.
+  const EVENT_COUNTS = { 'event-cart-place': 'event.cart.put', 'event-flood-place': 'event.flood.put' };
+  const eventSum = (zone) => zone.items.reduce((a, x) => a + (getEntity(state, x)?.item.size ?? 0), 0);
+  const eventFull = (task) => {
+    const z = zoneOf(`${task.replace(/^trial-/, '')}-place`)?.zone;
+    return Boolean(z && EVENT_COUNTS[z.id] && eventSum(z) >= (getEntity(state, `zone:${z.task}`)?.zone.need ?? Infinity));
+  };
+  function eventCount(ev) {
+    const key = EVENT_COUNTS[ev.zone];
+    const z = key ? zoneOf(ev.zone) : null;
+    const need = z ? getEntity(state, `zone:${z.zone.task}`)?.zone.need : null;
+    if (!need) return;
+    const n = eventSum(z.zone);
+    const id = ev.zone.replace(/^event-/, '').replace(/-place$/, '');
+    if (id === 'flood') {
+      const ditch = getEntity(state, 'mark:event-flood');
+      if (ditch) ditch.look = `ditch-${Math.min(4, Math.round((4 * n) / need))}`;
+    }
+    const who = getEntity(state, `event:${id}`);
+    if (!who || who.hidden) return;
+    emit({ type: 'open', screen: 'callout', id: who.id, textKey: n === need ? `${key}.enough` : key, params: { n: { key: `num.${Math.min(150, n)}` } } });
+  }
   function duckCount(ev) {
     const z = zoneOf(ev.zone);
     const it = getEntity(state, ev.item)?.item;
@@ -5266,6 +5291,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         return false;
       }
       if (zone.rule === 'spots') return freeSlot(state, zone) >= 0;
+      // The hole of the cart and the ditch of the flood are full at their count: a press takes no
+      // more (#191: after the last bucket, the rack glowed, and the press took a bucket again).
+      if (EVENT_COUNTS[zone.id] && eventSum(zone) >= (getEntity(state, `zone:${zone.task}`)?.zone.need ?? Infinity)) return false;
       return true;
     });
   }
@@ -5397,6 +5425,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // basket of bà lang goes only after a tap on her (#169): in a work of many presses the big
       // button stays the work, because a child who presses fast does not see a change of the
       // picture (a mode error, Norman 1981); a boy of grade 4 gave her basket two times by mistake.
+      // The hole of the cart or the ditch of the flood is full at its count ("Đủ rồi!"): the press
+      // asks the person to check (#191: after the last stone, the button was empty).
+      if (fin && !tapped && task && eventFull(task)) {
+        add({ ...base, ...fin, rank: -2, work: true }, REACH + 3);
+        continue;
+      }
       if (fin && readyFinish.has(task) && (task !== 'trial-healer' || tapped)) {
         add({ ...base, ...fin, rank: -20, work: true }, REACH + 3);
         continue;
@@ -7562,6 +7596,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         // A duck of the small event in the pen: the farmer says the count (#163: "Is it in the pen
         // now? It doesn't say 1 duck or anything.").
         duckCount(ev);
+        eventCount(ev);
         // A put after her count of the extra: the child tries again, and the give is free (#160).
         if (ev.zone === 'basket' && trialZone('healer')?.zone.extraTold) trialZone('healer').zone.putSince = true;
         deskPut(ev);

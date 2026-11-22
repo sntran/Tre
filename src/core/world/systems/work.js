@@ -500,7 +500,9 @@ export function setupTrial(world, def, level, env, opts = {}) {
     const row = def.target === 'mud' && Number.isFinite(az) ? { x: Math.cos(az), z: -Math.sin(az) } : null;
     const t = row ? at({ x: def.at.target.x + Math.sin(az) * HOLE_OUT, z: def.at.target.z + Math.cos(az) * HOLE_OUT }) : at(def.at.target);
     const place = addEntity(world, { id: `zone:${def.id}-place`, keep: true, zone: { id: `${def.id}-place`, task: owner, rule: 'exact', accepts: def.thing, items: [], x: t.x, y: t.y, z: t.z, rect: { x0: t.x - (row ? ROW_HALF : 2.5), x1: t.x + (row ? ROW_HALF : 2.5), z0: t.z - (row ? ROW_HALF : 2.5), z1: t.z + (row ? ROW_HALF : 2.5) }, ...(row ? { row } : {}) }, position: { x: t.x, y: t.y, z: t.z + 2.5, facing: 0 } });
-    addEntity(world, { id: `mark:${def.id}`, keep: true, position: { ...t, facing: 0 }, look: def.target });
+    // The hole of the cart has a pit for each stone, along the row (facing: the row is its x); the
+    // ditch of the flood is dry at the start, and its water rises with each bucket (#191).
+    addEntity(world, { id: `mark:${def.id}`, keep: true, position: { ...t, facing: row ? az : 0 }, look: row ? `mud-hole-${def.need}` : def.target === 'ditch' ? 'ditch-0' : def.target });
     for (let i = 0; i < (def.keep ?? 0); i++) add(place, 1, { set: true, fixed: true });
     packExact(world, place.zone);
     // The goods of a seller (barter) lie on her tray, for all to see: in front of her, beside the
@@ -881,8 +883,8 @@ function hearthCount(world, hearth, n, need) {
 
 // The things on the place of a small event lie in rows of four (a duck in a pen: in rows of three).
 const HOLE_OUT = 3.5; // half blocks: the hole of the cart from the middle of the cart, toward the camera
-const ROW_STEP = 1.6; // half blocks between two stones in the row of the hole
-const ROW_LONG = 6; // stones in one row
+export const ROW_STEP = 1.6; // half blocks between two stones in the row of the hole
+export const ROW_LONG = 6; // stones in one row
 const ROW_HALF = 5; // half blocks: the place of a row of stones reaches this far from its middle
 function packExact(world, zone) {
   if (zone.row) {
@@ -893,7 +895,8 @@ function packExact(world, zone) {
       const k = (i % ROW_LONG) * ROW_STEP - ROW_STEP * (ROW_LONG - 1) / 2;
       const back = Math.floor(i / ROW_LONG) * ROW_STEP;
       // The row is across the view (row: the right of the screen); behind is away from the camera.
-      if (e) e.position = { x: zone.x + zone.row.x * k + zone.row.z * back, y: zone.y + 0.2, z: zone.z + zone.row.z * k - zone.row.x * back, facing: 0 };
+      // Each stone lies in its pit of the hole (#191).
+      if (e) e.position = { x: zone.x + zone.row.x * k + zone.row.z * back, y: zone.y + 0.1, z: zone.z + zone.row.z * k - zone.row.x * back, facing: 0 };
     });
     return;
   }
@@ -1193,7 +1196,8 @@ function dealHand(world, e, tz, thing, hand) {
 }
 
 // The sound of a thing that goes down: a duck quacks; other things knock (#100).
-export const thingSound = (thing) => (thing?.item?.kind === 'duck' ? 'quack' : 'plank-down');
+// A bucket of the flood pours into the ditch with a splash (#191: each put was a thud only).
+export const thingSound = (thing) => (thing?.item?.kind === 'duck' ? 'quack' : thing?.item?.kind === 'pails' ? 'splash' : 'plank-down');
 const WALK_PACE = 2.5; // half blocks each second: a duck that walks to its place
 // A thing that walks from a point to its place now (a duck): a slide with the time of a walk, and
 // the thing turns the way that it goes.
