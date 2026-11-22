@@ -96,7 +96,7 @@ test('the check of a wrong basket at grade 4 lays it in doses and says what the 
   h.run(25);
   assert.ok(h.said.includes('healer.dose.lay'), h.said.join(', '));
   // The line says the whole pack (#178).
-  assert.ok(h.said.includes('healer.dose.short'), h.said.join(', '));
+  assert.ok(h.said.includes('healer.dose.lack.all') || h.said.includes('healer.dose.none'), h.said.join(', '));
 });
 
 test('a tap on another bed with a bunch in the hands puts the bunch back on its own bed', async () => {

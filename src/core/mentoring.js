@@ -40,8 +40,6 @@ const SHARE_SHOWS = new Set(['demo', 'smaller', 'share']);
 const ROD_GLOW = 0.35; // seconds between two rods that glow in the hint of a full mat (#96)
 const BUNDLE = 10; // rods in a bundle of the teacher
 const REST_TIME = 4.4; // seconds that the person and the hero sit in a break
-const PACKET_CLOSE = 0.6; // the frame of a packet that a line names: this part of the near view (#144)
-const PACKET_LOOK = 3; // seconds of that frame
 const BREAK_QUIET = 8; // seconds after a press: no break while the child works (#144)
 const GIVE_NEAR = 8; // half blocks: a hero this near the healer hears no "come to me" (#144)
 const BALL_UP = 0.1; // half blocks over the ground: the rice ball on its leaf
@@ -1337,6 +1335,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     if (!recipe || !model) return t;
     const left = itemsOf(model).filter((e) => !e.item.held);
     if (!left.length) return leafSteps(s, t);
+    const firstPack = []; // the bunches that she puts on the first leaf
     for (let j = 0; ; j++) {
       const leaf = getEntity(w, `zone:leaf-${j}`);
       if (!leaf) break;
@@ -1346,6 +1345,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
           const k2 = left.findIndex((e) => e.item.kind === `herb-${k}`);
           if (k2 < 0) break;
           const thing = left.splice(k2, 1)[0];
+          if (j === 0) firstPack.push(thing.id);
           s.steps.push({ at: t, put: { zone: leaf.id, item: thing.id, person: task.person?.id ?? 'hero' } });
           t += 0.45;
         }
@@ -1353,8 +1353,17 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       t += 0.4;
     }
     s.say(t, 'healer.model.leaf');
-    return t + 2.2;
+    t += 2.2;
+    // The recipe of one pack before the first put (#189: "I only found out what goes in one pack
+    // because I tapped the wooden box by accident."): the first pack glows while she says it. A
+    // worked example read first helps (Sweller and Cooper 1985).
+    if (firstPack.length) s.steps.push({ at: t, seq: { ids: firstPack } });
+    s.say(t, 'healer.recipe', { list: recipeList(recipe) });
+    return t + 3.2;
   }
+  // The herbs of a recipe as a list for a line: "hai bó ngải cứu, một bó tía tô và ba bó rau má".
+  const kindWord = (k, n) => (n === 1 ? { key: `healer.model.kind.${k}.one` } : { key: `healer.model.kind.${k}`, params: { n: { key: `num.${Math.min(150, n)}` } } });
+  const recipeList = (recipe) => Object.entries(recipe).filter(([, n]) => n > 0).map(([k, n]) => kindWord(k, n));
   // The first leaf of the model: she points at it, and its bunches glow (#125).
   function leafSteps(s, t, key = 'healer.model.leaf') {
     const leaf = getEntity(world(), 'zone:leaf-0');
@@ -1362,14 +1371,10 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     if (leaf) {
       s.point(t, { x: leaf.zone.x, z: leaf.zone.z }, 1.6);
       s.mark(t, { x: leaf.zone.x, z: leaf.zone.z }, 2.5);
-      // The packet that the line names glows (#144: "Which leaf?? Nothing moved or lit up."), and the
-      // view comes close to it while the line goes on, so that a child counts its bunches; then the
-      // view of the work again.
+      // The packet that the line names glows (#144: "Which leaf?? Nothing moved or lit up."). The
+      // view of the work stays (#189: the view came close by itself, and bà lang and the beds left
+      // the screen).
       s.steps.push({ at: t, seq: { ids: [...leaf.zone.items] } });
-      const r = leaf.zone.rect;
-      const y = leaf.zone.y;
-      s.steps.push({ at: t, view: { key: 'packet', points: [{ x: r.x0, y, z: r.z0 }, { x: r.x1, y, z: r.z1 }], close: PACKET_CLOSE } });
-      s.steps.push({ at: t + PACKET_LOOK, view: { key: 'trial-healer', points: workPoints('trial-healer') } });
     }
     return t + 2.2;
   }
@@ -1502,12 +1507,14 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   // child onto leaves beside the basket, one dose on each leaf, as far as they go, and says what the
   // last dose lacks or what is left over. The leaves and the bunches on them go at the end of the
   // count: the bunches are back in the basket.
-  const lackWords = (d, kind, missing, all) => ({
-    n: { key: `ord.${Math.min(6, d + 1)}` },
-    m: { key: `num.${Math.min(150, missing)}` },
-    all: { key: `num.${Math.min(150, all)}` },
-    herb: { key: `herb.name.${kind}` },
-  });
+  // Where the child is, and the whole pack (#189: "I only made one. Does she want me to make all
+  // five right now?"): "Có một thang rồi. Bà cần năm thang: còn bốn thang nữa. Mỗi thang: …"
+  function whereSteps(plan, done, s, t) {
+    const words = { d: { key: `num.${done}` }, k: { key: `num.${plan.doses}` }, r: { key: `num.${plan.doses - done}` } };
+    s.say(t, done > 0 ? 'healer.dose.done' : 'healer.dose.none', words);
+    s.say(t + 3.2, 'healer.recipe', { list: recipeList(plan.recipe) });
+    return t + 6.4;
+  }
   function doseSteps(task, s, t) {
     const plan = task.tz.zone.plan;
     const z = task.place.zone;
@@ -1522,8 +1529,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       if (!full && kinds.every((k) => pool[k] === 0)) {
         s.point(t, at, 1.2);
         s.mark(t, at, 2);
-        s.say(t + 0.1, 'healer.dose.short', lackWords(d, kinds[0], plan.recipe[kinds[0]], plan.recipe[kinds[0]]));
-        return t + 3.4;
+        return whereSteps(plan, d, s, t + 0.1);
       }
       s.steps.push({ at: t, spawn: { look: 'herb-leaf', x: at.x, z: at.z, facing: 0 } });
       let i = 0;
@@ -1536,11 +1542,11 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       }
       s.point(t, at, 1.2);
       if (!full) {
-        // The whole pack (#178: "còn thiếu rau má" said what was wrong, not how many bunches a pack
-        // needs): "Thang thứ nhất còn thiếu một bó rau má. Mỗi thang có ba bó rau má."
-        const lack = kinds.find((k) => laid[k] < plan.recipe[k]) ?? kinds[0];
-        s.say(t + 0.6, 'healer.dose.short', lackWords(d, lack, plan.recipe[lack] - laid[lack], plan.recipe[lack]));
-        return t + 4;
+        // Every herb that this pack lacks, at once (#189: "Why didn't she say it all at once?"):
+        // "Thang thứ hai còn thiếu hai bó ngải cứu và một bó tía tô."
+        const missing = kinds.filter((k) => laid[k] < plan.recipe[k]).map((k) => kindWord(k, plan.recipe[k] - laid[k]));
+        s.say(t + 0.6, 'healer.dose.lack.all', { n: { key: `ord.${Math.min(6, d + 1)}` }, list: missing });
+        return whereSteps(plan, d, s, t + 3.4);
       }
       s.say(t + 0.5, d === 0 ? 'count.dose.one' : 'count.dose', { n: { key: `num.${d + 1}` } });
       t += 1.6;

@@ -68,7 +68,7 @@ test('a tap on a pack of the model counts that pack: "Gói này: …"', async ()
   assert.ok(line.params.list.length >= 2, JSON.stringify(line.params));
 });
 
-test('a give that is short one bunch says the count of the short herb and the count of one pack', async () => {
+test('a give that is short one bunch names every herb that the pack lacks, the packs that are done and left, and the whole pack (#178, #189)', async () => {
   const h = await atHealer(4);
   const plan = query(h.session.state, 'zone').find((z) => z.zone.plan?.recipe)?.zone.plan;
   const kinds = Object.keys(plan.need);
@@ -81,14 +81,18 @@ test('a give that is short one bunch says the count of the short herb and the co
   h.session.command({ type: 'tap', target: { person: 'npc:healer' } });
   h.run(3);
   h.press();
-  h.run(20);
-  const line = h.said.slice(from).find((l) => l.key === 'healer.dose.short');
-  assert.ok(line, h.said.slice(from).map((l) => l.key).join(', '));
-  assert.equal(line.params.m.key, 'num.1');
-  assert.equal(line.params.all.key, `num.${plan.recipe[short]}`);
-  assert.equal(line.params.herb.key, `herb.name.${short}`);
-  const text = vi['healer.dose.short'].replace('{n}', vi['ord.1']).replace('{m}', vi['num.1']).replace('{all}', vi['num.3']).replaceAll('{herb}', vi['herb.name.rauma']);
-  assert.equal(text, 'Thang thứ nhất còn thiếu một bó rau má. Mỗi thang có ba bó rau má.');
+  h.run(30);
+  const said = h.said.slice(from);
+  const lack = said.find((l) => l.key === 'healer.dose.lack.all');
+  assert.ok(lack, said.map((l) => l.key).join(', '));
+  assert.deepEqual(lack.params.list.map((x) => x.key), [`healer.model.kind.${short}.one`]);
+  const done = said.find((l) => l.key === 'healer.dose.done');
+  assert.ok(done, said.map((l) => l.key).join(', '));
+  assert.equal(done.params.k.key, `num.${plan.doses}`);
+  const recipe = said.find((l) => l.key === 'healer.recipe');
+  assert.ok(recipe && recipe.params.list.length === kinds.length, said.map((l) => l.key).join(', '));
+  assert.equal(vi['healer.dose.done'], 'Có {d} thang rồi. Bà cần {k} thang: còn {r} thang nữa.');
+  assert.equal(vi['healer.recipe'], 'Mỗi thang: {list}.');
 });
 
 test('no line of bà lang says "bấm nút lớn: bà nhận giỏ", and the first word "thang" has its card', () => {

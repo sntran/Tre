@@ -2151,6 +2151,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (/^zone:share-/.test(wz.id) && !holding()) shareCount(wz.id);
     // With a sack in the hands, a tap on a mat chooses it: it glows, and the hero walks to it (#177).
     else if (/^zone:share-/.test(wz.id)) return chooseMat(wz.id);
+    // A tap on the ground of a bed of bà lang chooses its herb, as a tap on a bunch of it (#189).
+    if (z.rule === 'heap' && /^zone:bed-/.test(wz.id) && !holding()) {
+      const first = z.items.map((id) => getEntity(state, id)).find((e) => e && !e.item.held);
+      if (first) {
+        tap({ thing: first.id });
+        return true;
+      }
+    }
     if (z.rule === 'line') {
       // The hero walks along the bank to the point of the tap (#115: a tap on the ring turned the
       // hero only, and the next stake went where the hero stood).
@@ -6349,6 +6357,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // stakes over the float go back to the pile after the boat goes).
       const onBoat = getEntity(state, target.thing)?.item?.zone === 'boat' && boatReady() && getEntity(state, 'boat:fisher');
       if (onBoat) return tap({ ...target, thing: 'boat:fisher' });
+      // A tap on a bed of bà lang (the place, not a bunch on it) is a tap on a bunch of that bed: it
+      // chooses the herb of that bed, and the button shows that herb (#189: the button showed tía tô
+      // at the bed of rau má).
+      const bed = getEntity(state, target.thing);
+      if (bed?.zone?.rule === 'heap' && /^zone:bed-/.test(bed.id)) {
+        const first = bed.zone.items.map((id) => getEntity(state, id)).find((e) => e && !e.item.held);
+        if (first) return tap({ ...target, thing: first.id });
+      }
       const thing = getEntity(state, target.thing);
       // A tap on the basket of bà lang says the count of each kind in it (#160: "How many are in
       // the box now? I can't count them, it's too small."), and the hero walks to it.

@@ -824,3 +824,12 @@ In the short plays after #182, presses were lost in four places, with no sound a
 - **The count of the lumps.** Each lump in the hearth says its count ("Một miếng." … "Sáu miếng. Đủ rồi!"), and with the heap and the hearth in reach one press takes a lump and puts it in (the hearth is a place of one move, `ONE_MOVE`).
 - **The iron horse after the win.** A tap on it says "Ngựa sắt của Gióng." and the hero does not walk into it.
 - **Tests:** `tests/forge188.test.js`; the story `forge-horse` puts each lump with one press.
+
+## The leaves of bà lang: the recipe first (#189)
+
+- **The recipe before the first put.** After she deals the model, the first pack glows and she says the recipe of one pack: "Mỗi thang: hai bó ngải cứu, một bó tía tô và ba bó rau má." (`healer.recipe`), before "Giờ đến lượt cháu.".
+- **The give says where the child is and the whole pack:** "Có một thang rồi. Bà cần năm thang: còn bốn thang nữa." (`healer.dose.done`, or `healer.dose.none` with no full pack), then the recipe. A pack with a missing herb names every herb that it lacks at once: "Thang thứ hai còn thiếu hai bó ngải cứu và một bó tía tô." (`healer.dose.lack.all`).
+- **A tap on a bed chooses its herb** (a tap on the place or its ground too): the button shows the leaf of that herb. The tap does not put a bunch in the hands (the rule of the touch; question 123 in `docs/QUESTIONS.md`).
+- **No close view during the task.** The help that names a pack glows the pack in the view of the work; a pack of the model is at least 60 points wide there.
+- **The word "thang"** in one short line: "Thang là một gói thuốc."
+- **Tests:** `tests/healer189.test.js`.

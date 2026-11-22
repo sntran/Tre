@@ -66,7 +66,8 @@ test('at the level of the model: the first line with "thang" has the word line, 
   }
   assert.ok(thang, h.said.map((l) => l.key).join(', '));
   assert.deepEqual(thang.say, ['thang'], `the first line with thang: ${thang.key}`);
-  assert.equal(vi.t('word.thang'), 'Một thang thuốc là một gói lá thuốc, đủ cho một lần sắc.');
+  // The word in one short line (#189: the box of the word covered half of the screen).
+  assert.equal(vi.t('word.thang'), 'Thang là một gói thuốc.');
   for (const [k, v] of Object.entries(viDict)) {
     if (!/healer/.test(k)) continue;
     assert.ok(!/lá này|mỗi lá|một lá là/i.test(v), `${k}: "${v}"`);
@@ -128,17 +129,17 @@ test('a press next to her while she lays out the doses never puts them back befo
   h.press(0.5);
   const tz = h.zone('trial-healer');
   // While she lays out: presses.
-  for (let i = 0; i < 6 && !h.said.some((l) => l.key === 'healer.dose.short'); i++) {
+  for (let i = 0; i < 6 && !h.said.some((l) => l.key === 'healer.dose.lack.all' || l.key === 'healer.dose.none'); i++) {
     const a = h.session.action();
     assert.notEqual(a?.act, 'talk', 'no talk while she lays out');
     h.press(1);
   }
   h.run(20);
-  assert.ok(h.said.some((l) => l.key === 'healer.dose.short'), `her count: ${h.said.map((l) => l.key).join(', ')}`);
+  assert.ok(h.said.some((l) => l.key === 'healer.dose.lack.all' || l.key === 'healer.dose.none'), `her count: ${h.said.map((l) => l.key).join(', ')}`);
   assert.ok(tz, 'the trial is open');
 });
 
-test('at 390 × 844, while a line names a packet, the view shows a bunch of the model at least 4 mm on the glass', async () => {
+test('at 390 × 844, while a line names a packet, the view of the work shows a pack of the model at least 60 points wide (#189: no close view)', async () => {
   const h = await atHealer(4);
   // A wave: the help of the level names the packet ("Một thang như gói này.").
   for (const k of ['ngai', 'tiato']) h.put(k);
@@ -146,19 +147,20 @@ test('at 390 × 844, while a line names a packet, the view shows a bunch of the 
   h.run(4);
   h.press(20);
   h.session.command({ type: 'wave' });
+  // The view of the work stays (#189: no close view by itself): the line names the packet there.
   let seen = false;
   for (let i = 0; i < 30 * 15 && !seen; i++) {
     h.run(STEP);
-    seen = h.session.work()?.key === 'packet';
+    seen = h.said.some((l) => l.key === 'healer.dose.like');
   }
-  assert.ok(seen, `the view of the packet: ${h.said.map((l) => l.key).join(', ')}`);
+  assert.ok(seen, `the line of the packet: ${h.said.map((l) => l.key).join(', ')}`);
+  assert.notEqual(h.session.work()?.key, 'packet', 'no close view');
+  // The pack of the model is at least 60 points wide in the view of the work (#189).
   const cam = sessionCamera(h.session);
   const leaf = h.zone('leaf-0');
-  const bunch = getEntity(h.session.state, leaf.items[0]);
-  const p = bunch.position;
-  const a = cam.project(p.x / 2 - 0.3, p.y / 2, p.z / 2);
-  const b = cam.project(p.x / 2 + 0.3, p.y / 2, p.z / 2);
-  // A bunch is about 0.6 blocks wide (the leaves of tía tô). A phone of 390 points is about 64 mm wide: about 6.1 points in one millimeter.
-  const mm = Math.hypot(a.x - b.x, a.y - b.y) / (390 / 64);
-  assert.ok(mm >= 4, `a bunch is ${mm.toFixed(1)} mm`);
+  const r = leaf.rect;
+  const a = cam.project(r.x0 / 2, leaf.y / 2, r.z0 / 2);
+  const b = cam.project(r.x1 / 2, leaf.y / 2, r.z0 / 2);
+  const w = Math.hypot(a.x - b.x, a.y - b.y);
+  assert.ok(w >= 60, `a pack is ${w.toFixed(0)} points`);
 });
