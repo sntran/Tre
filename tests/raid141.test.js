@@ -184,7 +184,8 @@ test('a new tool that the child does not use stays new: after a lost try the sam
   // The patrol brings the traps, new for this child. The child takes a trap and never puts it.
   const s = await atScouts(2, { 'giong.farewell': true, 'scouts.won': true });
   s.start('patrol');
-  assert.ok(s.got.lines.includes('raid.tool.traps'), s.got.lines.join(', '));
+  // Up to grade 2 the rule comes in short lines (#191).
+  assert.ok(s.got.lines.includes('raid.tool.traps.s1'), s.got.lines.join(', '));
   const raid = getEntity(s.session.state, 'raid').raid;
   const flags = s.session.profile.flags;
   assert.equal(flags['raid.tool.traps'], undefined, 'no flag with the line');
@@ -204,7 +205,7 @@ test('a new tool that the child does not use stays new: after a lost try the sam
   // The next try: the same new tool with its line.
   const again = await atScouts(2, { 'giong.farewell': true, 'scouts.won': true, 'raid.patrol.lost': 1 });
   again.start('patrol');
-  assert.ok(again.got.lines.includes('raid.tool.traps'), again.got.lines.join(', '));
+  assert.ok(again.got.lines.includes('raid.tool.traps.s1'), again.got.lines.join(', '));
   // A trap on the road is a use: the flag comes.
   again.session.command({ type: 'tap', target: { thing: 'trap:1' } });
   again.run(5);

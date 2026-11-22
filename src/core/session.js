@@ -3251,7 +3251,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // A soldier waits at a post at most 4 s (#186: "I am waiting and waiting.").
   const RAID_STOP = Object.freeze({ first: 4, lost: 4 });
   const AIM_HOLD_GRADE = 3; // the highest grade where the aimed enemy stands at every raid
-  const COUNT_ONES_GRADE = 1; // the highest grade where a person counts aloud by ones (#191)
+  const COUNT_ONES_GRADE = 1;
+  const SHORT_RULE_GRADE = 2; // the highest grade where the rule of a tool comes in short lines (#191) // the highest grade where a person counts aloud by ones (#191)
   const TRAP_WAIT_GRADE = 2; // the highest grade where a raid with a trap ask waits for the trap (#185)
   const AIM_HOLD_RAIDS = 4; // from grade 4, the raids of the slingshot where it stands too
   const raidEnt = () => getEntity(state, 'raid');
@@ -3319,7 +3320,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // The flag of the tool comes when the child uses it, or with a win (#141: each lost try brought
       // a new tool): a lost try says the same line again at the next try.
       if (!line || profile.flags[`raid.tool.${tool}`]) continue;
-      lines.push({ tool, textKey: line.textKey, speaker: tool === 'sling' && def.coach ? def.coach : line.speaker });
+      const speaker = tool === 'sling' && def.coach ? def.coach : line.speaker;
+      // Up to grade 2, a rule comes in short lines, one sentence for each line (#191: "I got lost in
+      // the middle."); the first line of the traps makes the pile glow.
+      if (line.short && Number(profile.grade ?? 1) <= SHORT_RULE_GRADE) {
+        line.short.forEach((key, i) => lines.push(i ? { part: tool, with: true, textKey: key, speaker } : { tool, textKey: key, speaker, ...(tool === 'traps' ? { glowPile: true } : {}) }));
+        continue;
+      }
+      lines.push({ tool, textKey: line.textKey, speaker });
     }
     if (drag) {
       profile.flags['raid.tool.drag'] = true;
@@ -3352,7 +3360,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (raid.trapPost !== null) {
       const n = raid.posts.findIndex((q) => q.d === raid.trapPost) + 1;
       const ask = { textKey: 'raid.trap.ask', params: { post: { key: `num.${n}` } }, speaker: def.trapAsk ?? 'elder' };
-      const k = lines.findIndex((l) => l.tool === 'traps');
+      const k = lines.findLastIndex((l) => l.tool === 'traps' || l.part === 'traps');
       if (k >= 0) lines.splice(k + 1, 0, { ...ask, with: true });
       else lines.unshift(ask);
     }
@@ -3393,6 +3401,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // are open, and he is gone in about three seconds.
     if (def.leaveKey && getEntity(state, 'companion:raid')) emit({ type: 'open', screen: 'callout', id: 'companion:raid', textKey: def.leaveKey, params: {} });
     for (const l of lines.slice(0, now)) {
+      // The pile of the traps glows with its line ("Bẫy ở đống này."), not after it.
+      if (l.glowPile) queue(() => emit({ type: 'glowSeq', ids: [...(zoneOf('raid-traps')?.zone.items ?? [])] }));
       say(l.textKey, l.params, null, l.speaker);
       // The first post glows with the line of the side; with the count of the posts, each post.
       if (l.glow) queue(() => emit({ type: 'glowSeq', ids: ['post:1'] }));

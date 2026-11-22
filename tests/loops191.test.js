@@ -176,3 +176,17 @@ test('the looks of the long hole and of the ditch at each level', async () => {
   const f = workThing(thingLook('mud-hole-5'));
   assert.equal(f.parts.filter((p) => /^pit/.test(p.name)).length, 5);
 });
+
+test('up to grade 2 the rule of the traps comes in short lines, one sentence each, and the pile glows with the first; from grade 3 the long line', () => {
+  const raids = load('data/raids.json');
+  assert.deepEqual(raids.toolLines.traps.short.map((k) => vi[k]), ['Bẫy ở đống này.', 'Cháu lấy một cái.', 'Bấm một lần, bẫy đi một cột.']);
+  for (const [tool, line] of Object.entries(raids.toolLines)) {
+    for (const k of line.short ?? []) {
+      assert.ok(vi[k], k);
+      assert.equal((vi[k].match(/[.!?](\s|$)/g) ?? []).length, 1, `${tool}: one sentence: ${vi[k]}`);
+    }
+  }
+  const src = readFileSync(new URL('../src/core/session.js', import.meta.url), 'utf8');
+  assert.match(src, /const SHORT_RULE_GRADE = 2;/);
+  assert.match(src, /if \(l\.glowPile\) queue\(\(\) => emit\(\{ type: 'glowSeq', ids: \[\.\.\.\(zoneOf\('raid-traps'\)/);
+});

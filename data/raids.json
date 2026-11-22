@@ -10,13 +10,13 @@
   "toolLines": {
     "sling": { "speaker": "elder", "textKey": "raid.tool.sling" },
     "drag": { "speaker": "elder", "textKey": "raid.tool.drag" },
-    "gate": { "speaker": "elder", "textKey": "raid.tool.gate" },
-    "traps": { "speaker": "elder", "textKey": "raid.tool.traps" },
+    "gate": { "speaker": "elder", "textKey": "raid.tool.gate", "short": ["raid.tool.gate.s1", "raid.tool.gate.s2"] },
+    "traps": { "speaker": "elder", "textKey": "raid.tool.traps", "short": ["raid.tool.traps.s1", "raid.tool.traps.s2", "raid.tool.traps.s3"] },
     "helpers": { "speaker": "smith", "textKey": "raid.tool.helpers" },
-    "nghe": { "speaker": "smith", "textKey": "raid.tool.nghe" },
-    "water": { "speaker": "smith", "textKey": "raid.tool.water" },
-    "fire": { "speaker": "smith", "textKey": "raid.tool.fire" },
-    "lightning": { "speaker": "smith", "textKey": "raid.tool.lightning" }
+    "nghe": { "speaker": "smith", "textKey": "raid.tool.nghe", "short": ["raid.tool.nghe.s1", "raid.tool.nghe.s2", "raid.tool.nghe.s3"] },
+    "water": { "speaker": "smith", "textKey": "raid.tool.water", "short": ["raid.tool.water.s1", "raid.tool.water.s2"] },
+    "fire": { "speaker": "smith", "textKey": "raid.tool.fire", "short": ["raid.tool.fire.s1", "raid.tool.fire.s2"] },
+    "lightning": { "speaker": "smith", "textKey": "raid.tool.lightning", "short": ["raid.tool.lightning.s1", "raid.tool.lightning.s2"] }
   },
   "skills": {
     "shot": [

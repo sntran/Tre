@@ -445,7 +445,8 @@ export function checkFact(fact, ctx) {
   }
   if (fact.text) {
     const key = fact.text.shown;
-    const shown = ctx.events.some((ev) => ev.type === 'open' && (ev.textKey === key || ev.choices?.includes(key)));
+    // A rule in short lines (<key>.s1, <key>.s2, …, #191) shows with its first line.
+    const shown = ctx.events.some((ev) => ev.type === 'open' && (ev.textKey === key || ev.textKey === `${key}.s1` || ev.choices?.includes(key)));
     if (!shown) return `the text ${key} did not show`;
     return null;
   }
