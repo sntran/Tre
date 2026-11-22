@@ -96,3 +96,16 @@ test('after a sleep, "Sáng rồi!" comes when the sky is the sky of the day', a
   assert.equal(nightAt(DEFAULT_DAY.dawn[1]), 0, 'the end of the dawn is the light of the day');
   assert.ok(nightAt(6) >= 0.5, 'at 6:00 the sky is still dark');
 });
+
+test('the line of the boss raid does not say that Gióng comes; the first sight of Gióng on his horse names him, and he glows', async () => {
+  assert.ok(!/Gióng/.test(vi['raid.boss.intro']), vi['raid.boss.intro']);
+  assert.equal(vi['giong.seen.horse'], 'Gióng đây! Gióng cưỡi ngựa sắt đi cùng em.');
+  const story = load('tests/stories/raid-boss.json');
+  const h = await start(story, { steps: story.steps });
+  h.run(20);
+  const seen = h.events.find((e) => e.type === 'open' && e.textKey === 'giong.seen.horse');
+  assert.ok(seen, 'the line of the first sight');
+  const at = h.events.indexOf(seen);
+  assert.ok(h.events.slice(at, at + 3).some((e) => e.type === 'glowSeq' && (e.ids.includes('npc:giong-hero') || e.ids.includes('companion:raid'))), 'Gióng glows');
+  assert.equal(h.events.filter((e) => e.type === 'open' && e.textKey === 'giong.seen.horse').length, 1, 'one time');
+});

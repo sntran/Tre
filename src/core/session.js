@@ -1129,6 +1129,23 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
   }
 
+  // The first sight of grown Gióng on his horse (#191: "Is the man on the horse a bad soldier? He is
+  // right next to me!"): when he is on the screen, Nghé names him, and he glows. No line says that
+  // Gióng comes before the child sees him.
+  function checkGiongSight() {
+    if (profile.flags['giong.seen.horse'] || screen || busy || state.tick % 15 !== 7) return;
+    // Gióng in the village (with his horse), or the rider of the iron steed in a raid.
+    const steed = getEntity(state, 'steed:raid');
+    const g = getEntity(state, 'mount:giong-hero') ? getEntity(state, 'npc:giong-hero') : steed?.look === 'iron-steed' ? getEntity(state, 'companion:raid') : null;
+    const hp = hero()?.position;
+    if (!g?.position || g.hidden || !hp) return;
+    if (Math.hypot(g.position.x - hp.x, g.position.z - hp.z) > CARD_VIEW || !onScreen(g.position, hp) || covered(g.position)) return;
+    profile.flags['giong.seen.horse'] = true;
+    const nghe = getEntity(state, 'friend:nghe');
+    emit({ type: 'open', screen: 'callout', id: nghe && !nghe.hidden ? nghe.id : 'hero', textKey: 'giong.seen.horse', params: {} });
+    emit({ type: 'glowSeq', ids: [g.id] });
+  }
+
   // The done steps of the quests, about each second.
   function checkSteps() {
     if (state.tick % 30 !== 0 || !data.quests) return;
@@ -7398,6 +7415,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     stepCheer();
     checkSteps();
     checkNotebook();
+    checkGiongSight();
     stepBridgeOpen();
     stepHold();
     stepComeTalk();
