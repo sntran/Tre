@@ -60,7 +60,7 @@ async function at(cell) {
   return { session, said, views, run, press, ferry, boat, standAt };
 }
 
-test('a wave near the traveler before the puzzle gives no hint; the first wave after the puzzle gives the rule, again until a wrong crossing', async () => {
+test('a wave near the traveler before the puzzle gives no hint; the waves after the puzzle give the next move (#190)', async () => {
   // Far enough that the traveler does not say the puzzle, but near (the old wave worked 40 half
   // blocks away).
   const p = await at([12, 62]);
@@ -79,13 +79,15 @@ test('a wave near the traveler before the puzzle gives no hint; the first wave a
   p.session.command({ type: 'wave' });
   p.run(1);
   assert.ok(!p.said.some((k) => /^puzzle\.ferry\.hint/.test(k)), `no hint between the lines: ${p.said.join(', ')}`);
-  p.run(10);
+  // The first line comes after the view frames the river (#190).
+  p.run(14);
   assert.deepEqual(p.said.filter((k) => /^puzzle\.ferry\.(start|how)/.test(k)), F.offer);
   for (let i = 0; i < 2; i++) {
     const n = p.said.length;
     p.session.command({ type: 'wave' });
     p.run(3);
-    assert.ok(p.said.slice(n).includes('puzzle.ferry.hint.1'), `wave ${i + 1}: ${p.said.slice(n).join(', ')}`);
+    // The hand gives a next move, the same line as after a crossing (#190).
+    assert.ok(p.said.slice(n).some((k) => /^puzzle\.ferry\.(next\.|hint\.2$)/.test(k)), `wave ${i + 1}: ${p.said.slice(n).join(', ')}`);
   }
 });
 

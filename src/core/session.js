@@ -857,7 +857,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // stood in the way of the next walk of the hero (#81: no person closes every way).
     const animalNear = (f) => String(f.id).startsWith('life:') && Math.hypot(f.position.x - h.x, f.position.z - h.z) <= ANIMAL_STAY;
     const inScene = (f) => (getEntity(state, f.id)?.schedule?.scene?.until ?? 0) > state.tick;
-    const others = figs.filter((f) => !RIDER_IDS.has(f.id) && f.id !== 'npc:giong-boy' && f.id !== 'hero' && f.id !== taskPerson && f.id !== chosen?.id && !nextTo(f) && !animalNear(f) && !inScene(f) && !getEntity(state, f.id)?.follow);
+    // The person of a riddle steps aside also next to the hero (#190: the hero was an outline behind
+    // the traveler at the boat: "Where am I?").
+    const others = figs.filter((f) => !RIDER_IDS.has(f.id) && f.id !== 'npc:giong-boy' && f.id !== 'hero' && f.id !== taskPerson && f.id !== chosen?.id && (!nextTo(f) || f.id === 'pz:traveler') && !animalNear(f) && !inScene(f) && !getEntity(state, f.id)?.follow);
     for (const id of seeThrough(others, guard, viewAz, VIEW.elevation, (f) => f.size.r)) {
       const e = getEntity(state, id);
       // An enemy of a raid keeps its place on the road (the count is its place), and it never
@@ -5213,7 +5215,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function candidates() {
     const out = allCandidates();
     const here = workHere();
-    if (!here || here === 'puzzle' || here === 'folk') return out;
+    if (!here || here === 'folk') return out;
+    // During a riddle the button stays at the riddle (#190: a press walked the hero far from the
+    // boat to a bamboo): no walk to the work of a task, and no work of a task.
+    if (here === 'puzzle') {
+      const riddle = (c) => !c.go && !(c.act === 'raid') && (WORKLESS.has(c.act) || !taskOfCandidate(c));
+      const kept = out.filter(riddle);
+      kept.far = [];
+      return kept;
+    }
     const other = (c) => {
       if (c.act === 'raid') return true;
       // A talk with the person of an event stays: during another work it says to wait (#129).

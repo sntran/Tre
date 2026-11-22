@@ -833,3 +833,14 @@ In the short plays after #182, presses were lost in four places, with no sound a
 - **No close view during the task.** The help that names a pack glows the pack in the view of the work; a pack of the model is at least 60 points wide there.
 - **The word "thang"** in one short line: "Thang là một gói thuốc."
 - **Tests:** `tests/healer189.test.js`.
+
+## The ferry: both banks in view (#190)
+
+- **The things on both banks in the view.** At each landing and at the start, the view frames the things on both banks, the boat, the landings, the traveler, and the hero (`lookBoth` in `src/core/puzzles.js`).
+- **The next move at the landing.** The boat of the riddle crosses at 8 half blocks a second (`RIDDLE_BOAT`), about 2 s, and the line of the next move comes when the boat touches the bank.
+- **The first line when the river is on the screen:** the view frames the river 1.5 s before the first line of the riddle (`OFFER_VIEW`).
+- **The hero in view:** the traveler steps aside also when he stands next to the hero.
+- **The button stays at the riddle:** during a riddle the button offers no walk to the work of a task and no work of a task.
+- **The end of the riddle:** at the win the traveler comes over to the bank of the hero, his star goes, and he gives the eggs there.
+- **The hand gives a next move,** the same line as after a crossing; the demonstration stays the last hint. The line of the rule says the boat as the next step: "Rồi bấm nút có hình con đò để qua sông."
+- **Tests:** `tests/ferry190.test.js`; the robot at `ferry` and `puzzle-ferry` by day.

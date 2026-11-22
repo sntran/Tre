@@ -7,7 +7,7 @@ export const WRITES = ['ferry', 'position', 'motion', 'aboard', 'route', 'act', 
 
 import { query, getEntity } from '../state.js';
 
-const SPEED = 4; // half blocks a second: two cells a second over the water
+const SPEED = 4; // half blocks a second: two cells a second over the water (a boat can have its own speed)
 const STEP_TIME = 0.8; // seconds to step onto the boat or off it
 const DECK = 0.7; // half blocks: the deck over the water
 const SURFACE = 1.2; // half blocks: the surface of a river over its bed
@@ -61,12 +61,12 @@ export function ferry(world, dt, rng, env) {
       const dx = to.x - p.x;
       const dz = to.z - p.z;
       const d = Math.hypot(dx, dz);
-      const k = Math.min(1, (SPEED * dt) / Math.max(d, 1e-6));
+      const k = Math.min(1, ((f.speed ?? SPEED) * dt) / Math.max(d, 1e-6));
       p.x += dx * k;
       p.z += dz * k;
       p.y = float(p);
       if (d > 1e-3) p.facing = Math.atan2(dx, dz);
-      return d <= SPEED * dt;
+      return d <= (f.speed ?? SPEED) * dt;
     };
     if (f.state === 'call') {
       // The boat comes over the water to the landing of the riders.

@@ -18,8 +18,6 @@ const CASES = [];
 for (const name of ['staffs-grade1', 'forge-horse', 'trial-healer', 'raid-river-night', 'event-duck', 'ferry']) {
   for (const night of [false, true]) CASES.push({ name, kind: 'star', night });
 }
-// The first line of the ferry says to press the boat before the boat is on the button (#190).
-CASES.find((c) => c.name === 'ferry' && !c.night).todo = '#190: the first line of the ferry';
 for (const night of [false, true]) {
   // The share after the raid of the soldiers: the raid stays off the button (#185). The soldiers
   // come by day only, so the steps of the raid play by day.
@@ -28,7 +26,9 @@ for (const night of [false, true]) {
   CASES.push({ name: 'raid-soldiers', kind: 'slow', night });
   CASES.push({ name: 'bridge-mashing', kind: 'presser', night, todo: night ? null : '#191: the loop of the plank' });
   CASES.push({ name: 'forge-horse', kind: 'presser', night, grade: 3 });
-  CASES.push({ name: 'puzzle-ferry', kind: 'star', night, todo: '#190: the loop of the riddle, the fisher at night' });
+  // At night the robot leaves the riddle for the stakes of the fisher and does not reach the ring
+  // there: a limit of the robot (#174), not of the riddle.
+  CASES.push({ name: 'puzzle-ferry', kind: 'star', night, todo: night ? 'the robot does not reach the ring of the fisher (#174)' : null });
   CASES.push({ name: 'healer-grade4', kind: 'walker', night });
   CASES.push({ name: 'staffs-grade1', kind: 'walker', night });
 }

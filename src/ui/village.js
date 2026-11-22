@@ -1282,9 +1282,13 @@ export async function mountVillage(ctx, params = {}) {
           pts = [...w.points];
           // A puzzle frames the things near the hero first, so that the hero stays in the middle half
           // of the screen (#158: "I still can't find ME. I don't see my boy anywhere." at the ferry).
+          // Both banks of the ferry stay in the view when they fit in the far view (#190: after a
+          // crossing the child saw only the boat and the hero).
           if (w.key === 'puzzle') {
+            const far = viewSize(size.width, size.height, VIEW.zooms.length - 1).h;
+            const all = frameWork([heroAt, ...pts], { az: view.angle, width: size.width, height: size.height, safe, min: 0, max: Infinity, lift: 1.5 });
             const near = pts.filter((q) => Math.hypot(q.x - heroAt.x, q.z - heroAt.z) <= PUZZLE_NEAR);
-            if (near.length) pts = near;
+            if (all.h > far && near.length) pts = near;
           }
           const p = w.person ? figures.placeOf(w.person) : null;
           if (p && Math.hypot(p.x - mid.x, p.z - mid.z) < WORK_AWAY) pts.push(p);

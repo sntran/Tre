@@ -60,7 +60,7 @@ test('the first riddle says how to answer; after a riddle found alone, the next 
 test('the offer of the ferry ends with how to load, and a thing near the hero is on the button', () => {
   const ferry = load('data/world/puzzles.json').ferry;
   assert.equal(ferry.offer.at(-1), 'puzzle.ferry.how');
-  assert.equal(vi.t('puzzle.ferry.how'), 'Cháu đứng cạnh một thứ, rồi bấm nút lớn để đưa nó lên đò. Bấm nút có hình con đò để qua sông.');
+  assert.equal(vi.t('puzzle.ferry.how'), 'Cháu đứng cạnh một thứ, rồi bấm nút lớn để đưa nó lên đò. Rồi bấm nút có hình con đò để qua sông.');
   assert.ok(en.has('puzzle.ferry.how'));
 });
 

@@ -24,6 +24,8 @@ const DEMO_STEP = 1.6; // seconds between the two steps that the healer shows
 export const OFFER_NEAR = 12;
 const OFFER_LINE = 3.6; // seconds between the short lines of the offer of the ferry
 const WAIT_HINT = 60; // seconds with no crossing after the offer: the next hint of the ferry comes
+const OFFER_VIEW = 1.5; // seconds: the view frames the river before the first line of the riddle
+const RIDDLE_BOAT = 8; // half blocks a second: the boat of the riddle crosses in about 2 s (#190: a trip of more than 5 s, and the next move came late)
 
 // Is today a day of the puzzle (one day in `every`, by the seed and the day)?
 export const puzzleDay = (def, seed, day) => hashSeed(`${seed}:puzzle:${def.id}:${day}`) % def.every === 0;
@@ -125,7 +127,7 @@ export function createPuzzles(deps) {
     const b = q(F.b);
     addEntity(w(), { keep: true, id: 'pz:traveler', person: { kind: 'puzzle', ref: 'ferry' }, position: { ...at, facing: Math.PI }, motion: { vx: 0, vz: 0, speed: 0 }, solid: { r: 1.8 }, look: F.person });
     addEntity(w(), { keep: true, id: 'pz:mark:ferry', position: { x: at.x, y: at.y + 4.2, z: at.z, facing: 0 }, look: 'mark-side' });
-    addEntity(w(), { keep: true, id: 'ferry:pz', ferry: { a: { x: a.x, z: a.z }, b: { x: b.x, z: b.z }, landA: q(F.landA), landB: q(F.landB), side: 'a', state: 'wait', riders: [], from: [], t: 0, man: null }, position: { x: a.x, y: a.y + 1.2, z: a.z, facing: Math.atan2(b.x - a.x, b.z - a.z) }, look: 'skiff-mid' });
+    addEntity(w(), { keep: true, id: 'ferry:pz', ferry: { a: { x: a.x, z: a.z }, b: { x: b.x, z: b.z }, landA: q(F.landA), landB: q(F.landB), side: 'a', state: 'wait', riders: [], from: [], t: 0, man: null, speed: RIDDLE_BOAT }, position: { x: a.x, y: a.y + 1.2, z: a.z, facing: Math.atan2(b.x - a.x, b.z - a.z) }, look: 'skiff-mid' });
     ferry = { day, where: Object.fromEntries(F.things.map((t) => [t, 'a'])), snapshot: null, scene: null, back: false, hint: 0, offered: false, load: null, wrong: 0, idle: 0, demo: null };
     F.things.forEach((t) => addEntity(w(), { keep: true, id: thingId(t), item: { kind: 'pz', size: 1, task: null, zone: null, held: null, set: true, fixed: true }, position: { ...spotOf('a', t), facing: 0 }, look: LOOK[t] }));
     pack();
@@ -277,9 +279,20 @@ export function createPuzzles(deps) {
       deps.log('puzzle', { id: 'ferry', crossings: s.tries, least: F.least });
       deps.say('pz:traveler', F.done ?? 'puzzle.ferry.done', {});
       // The traveler gives the eggs from his hand to the hero, in view, with a line that names them
-      // (#110: the gift came as a small egg under the count of rice).
+      // (#110: the gift came as a small egg under the count of rice). He comes over to the bank of
+      // the hero first, and his star goes (#190: he stayed across the water, and the eggs came from
+      // there).
       const tr = getEntity(w(), 'pz:traveler');
-      if (tr) tr.gesture = { act: 'point', x: hero().position.x, z: hero().position.z, t: 2.5 };
+      const mark = getEntity(w(), 'pz:mark:ferry');
+      if (mark) mark.hidden = true;
+      if (tr) {
+        const hp = hero().position;
+        const land = f.side === 'a' ? f.landA : f.landB;
+        const side = { x: land.x + (hp.x >= land.x ? -2.6 : 2.6), z: land.z };
+        tr.position = { ...tr.position, x: side.x, z: side.z, facing: Math.atan2(hp.x - side.x, hp.z - side.z) };
+        delete tr.route;
+        tr.gesture = { act: 'point', x: hp.x, z: hp.z, t: 2.5 };
+      }
       after(OFFER_LINE, () => {
         deps.say('pz:traveler', 'puzzle.ferry.gift', { n: { key: `num.${F.gift.egg ?? 1}` } });
         deps.give(F.gift, 'pz:traveler');
@@ -301,13 +314,16 @@ export function createPuzzles(deps) {
   // things on the far bank were out of the view, and a child could not tell who was on which side).
   // turn: the view may turn to a side where nothing covers them (when the child starts or asks for
   // the puzzle, not at the offer, #149).
+  // The view frames the things on both banks, the boat, the landings, the traveler, and the hero
+  // (#190: after a crossing a child did not see the thing that crossed).
   function lookBoth(turn = true) {
     const f = boat()?.ferry;
     if (!f) return;
     const pts = F.things.map((t) => ({ ...getEntity(w(), thingId(t)).position }));
     const t = getEntity(w(), 'pz:traveler');
+    const h = getEntity(w(), 'hero');
     const y = boat().position.y;
-    deps.look([...pts, { ...boat().position }, { ...f.landA, y }, { ...f.landB, y }, ...(t ? [{ ...t.position }] : [])], turn);
+    deps.look([...pts, { ...boat().position }, { ...f.landA, y }, { ...f.landB, y }, ...(t ? [{ ...t.position }] : []), ...(h ? [{ ...h.position }] : [])], turn);
   }
   // The well, the two pots, the jar, and the drain.
   function lookPots(turn) {
@@ -319,7 +335,8 @@ export function createPuzzles(deps) {
     lookBoth(turn);
     // A wave gets a hint only after the last line of the puzzle (#110: in a play, a wave between the
     // lines gave the rule before the puzzle was said).
-    F.offer.forEach((key, i) => after(i * OFFER_LINE, () => {
+    // The first line after the view frames the river (#190: "a boat? I don't see any boat.").
+    F.offer.forEach((key, i) => after(OFFER_VIEW + i * OFFER_LINE, () => {
       if (!ferry) return;
       deps.say('pz:traveler', key, {});
       if (i === F.offer.length - 1) ferry.told = true;
@@ -706,13 +723,17 @@ export function createPuzzles(deps) {
         // The middle hint is the next step from the banks as they are (#122): the traveler says
         // it and points at the thing to take. "The chicken first" only when the chicken has not
         // crossed.
-        const step = k > 0 && k < F.hints.length - 1 ? stepHint() : null;
+        // The hand gives a next move, the same line as after a crossing (#190: the hand said the
+        // rule again); the demonstration stays the last hint.
+        const step = k < F.hints.length - 1 ? stepHint() : null;
         if (step) {
           deps.say('pz:traveler', step.key, step.params);
-          const p = step.thing ? getEntity(w(), thingId(step.thing))?.position : boat()?.position;
+          const e = step.thing ? getEntity(w(), thingId(step.thing)) : null;
+          const p = e?.position ?? boat()?.position;
           if (p) after(0.4, () => point(p, 2.4));
+          if (e) deps.glow?.([e.id]);
         } else deps.say('pz:traveler', F.hints[k], {});
-        if (k === 0) {
+        if (k === 0 && !step) {
           // The two pairs, one at a time.
           F.pairs.forEach(([a, b], i) => after(i * 2.4, () => {
             const p = getEntity(w(), thingId(a))?.position;

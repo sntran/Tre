@@ -115,13 +115,15 @@ test('the ferry: a wrong pair shows its scene and all come back; seven crossings
   // goes back onto the bank.
   p.run(SCENE_END, () => !ferry().scene && getEntity(p.session.state, 'ferry:pz').ferry.side === 'a' && getEntity(p.session.state, 'ferry:pz').ferry.state === 'wait');
   assert.deepEqual(ferry().where, { dog: 'a', chicken: 'a', rice: 'a' }, 'all come back');
-  // A wave gives the hints in order.
-  for (const k of data.ferry.hints) {
-    p.run(2, () => !p.session.screen && !p.session.busy);
+  // A wave gives the next move (#190: the same line as after a crossing), and the last hint is the
+  // demonstration.
+  const want = [/^puzzle\.ferry\.(next\.|hint\.2$)/, /^puzzle\.ferry\.(next\.|hint\.2$)/, new RegExp(`^${data.ferry.hints.at(-1).replace(/\./g, '\\.')}$`)].slice(-data.ferry.hints.length);
+  for (const k of want) {
+    p.run(6, () => !p.session.screen && !p.session.busy && p.session.canWave);
     const n = p.said.length;
     p.session.command({ type: 'wave' });
     p.run(0.5);
-    assert.ok(p.said.slice(n).includes(k), `${k}: ${p.said.slice(n).join(', ')} ${p.session.screen} ${p.session.busy} ${p.session.canWave}`);
+    assert.ok(p.said.slice(n).some((x) => k.test(x)), `${k}: ${p.said.slice(n).join(', ')} ${p.session.screen} ${p.session.busy} ${p.session.canWave}`);
   }
   // The last hint is a demonstration (#110): the traveler takes the chicken across and back.
   assert.ok(ferry().demo, 'a demonstration');
